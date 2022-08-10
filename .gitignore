@@ -1,0 +1,14 @@
+﻿################################################################################
+# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
+################################################################################
+
+/.vs
+/ArsLibrary/bin/Debug/CommonLib.pdb
+/ArsLibrary/bin/Debug/CommonLib.Function.Fitting.pdb
+/ArsLibrary/bin/Debug/ArsLibrary.pdb
+/ArsLibrary/obj
+/UtilityExample/bin/Debug/UtilityExample.pdb
+/UtilityExample/bin/Debug/CommonLib.pdb
+/UtilityExample/bin/Debug/CommonLib.Function.Fitting.pdb
+/UtilityExample/bin/Debug/ArsLibrary.pdb
+/UtilityExample/obj
