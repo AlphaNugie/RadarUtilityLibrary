@@ -47,6 +47,9 @@
     <Reference Include="protobuf-net, Version=2.4.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.4.6\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="SocketHelper">
+      <HintPath>..\..\..\_Old_Assembly\SocketHelper\SocketHelper\bin\Debug\SocketHelper.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -66,22 +69,18 @@
     <Compile Include="Core\ArsFunc.cs" />
     <Compile Include="Core\ImageBase64String.cs" />
     <Compile Include="Model\BaseMessage.cs" />
-    <Compile Include="Model\ClusterGeneral.cs" />
     <Compile Include="Model\ClusterQuality.cs" />
     <Compile Include="Model\ClusterStatus.cs" />
     <Compile Include="Model\CommUnit.cs" />
-    <Compile Include="Model\DataFrameBase.cs" />
-    <Compile Include="Model\FrameFilterFlags.cs" />
-    <Compile Include="Model\ObjectGeneral.cs" />
+    <Compile Include="Model\Mapper\RadarGroup.cs" />
     <Compile Include="Model\ObjectQuality.cs" />
     <Compile Include="Model\ObjectStatus.cs" />
-    <Compile Include="Model\OpcItem.cs" />
     <Compile Include="Model\RadarBase.cs" />
     <Compile Include="Model\RadarState.cs" />
-    <Compile Include="Model\SensorGeneral.cs" />
     <Compile Include="Model\SensorMessage.cs" />
     <Compile Include="Model\SensorQuality.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tasks\ContentServerTask.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\Debug\" />
@@ -90,4 +89,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /e /r /y /exclude:D:\DLL\_uncopy.txt $(ProjectDir)bin\Debug D:\DLL\</PostBuildEvent>
+  </PropertyGroup>
 </Project>

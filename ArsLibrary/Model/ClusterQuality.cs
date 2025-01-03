@@ -1,5 +1,6 @@
 ﻿using ArsLibrary.Core;
 using CommonLib.Extensions;
+using CommonLib.Extensions.Property;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,16 +35,19 @@ namespace ArsLibrary.Model
         /// <summary>
         /// 集群的虚警概率（错误报警）
         /// </summary>
+        [PropertyMapperTo("Pdh0")]
         public FalseAlarmProbability Pdh0 { get; set; }
 
         /// <summary>
         /// 多普勒（径向速度）不确定的状态
         /// </summary>
+        [PropertyMapperTo("AmbigState")]
         public AmbigState AmbigState { get; set; }
 
         /// <summary>
         /// 集群的有效状态
         /// </summary>
+        [PropertyMapperTo("InvalidState")]
         public InvalidState InvalidState { get; set; }
         #endregion
 
@@ -59,6 +63,22 @@ namespace ArsLibrary.Model
         public ClusterQuality(BaseMessage message)
         {
             Base = message;
+        }
+
+/// <inheritdoc/>
+        public override SensorQuality Copy()
+        {
+            return new ClusterQuality
+            {
+                Id = Id,
+                DistLongRms = DistLongRms,
+                DistLatRms = DistLatRms,
+                VrelLongRms = VrelLongRms,
+                VrelLatRms = VrelLatRms,
+                Pdh0 = Pdh0,
+                InvalidState = InvalidState,
+                AmbigState = AmbigState
+            };
         }
 
         /// <summary>
@@ -88,6 +108,12 @@ namespace ArsLibrary.Model
     /// </summary>
     public enum FalseAlarmProbability
     {
+        /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
+
         /// <summary>
         /// 无效数值
         /// </summary>
@@ -142,6 +168,11 @@ namespace ArsLibrary.Model
     /// </summary>
     public enum AmbigState
     {
+        /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
 
         /// <summary>
         /// 无效值
@@ -179,6 +210,12 @@ namespace ArsLibrary.Model
     /// </summary>
     public enum InvalidState
     {
+        /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
+
         /// <summary>
         /// 有效
         /// </summary>

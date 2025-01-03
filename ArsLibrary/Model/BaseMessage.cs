@@ -63,14 +63,15 @@ namespace ArsLibrary.Model
         public BaseMessage(string input)
         {
             byte[] array = null;
-            try { array = HexHelper.HexString2Bytes_Alternate(input); }
+            //try { array = HexHelper.HexString2Bytes_Alternate(input); }
+            try { array = HexHelper.HexString2Bytes_NoSpaces(input); }
             catch (Exception) { return; }
             if (array == null || array.Length < 13)
                 return;
 
             DataLength = array[0]; //有效字节数
-            int messageid = array[3] * 256 + array[4]; //实际的MESSAGE_ID
-            SensorId = ArsFunc.GetSensorIdByMessageId(messageid, out int messageid_0); //从MESSAGE_ID中提取的SENSOR_ID
+            int messageid = array[3] * 256 + array[4], messageid_0; //实际的MESSAGE_ID
+            SensorId = ArsFunc.GetSensorIdByMessageId(messageid, out messageid_0); //从MESSAGE_ID中提取的SENSOR_ID
             MessageId = (SensorMessageId_0)messageid_0; //得到MESSAGE_ID_0（数据类型）
             MessageName = MessageId.GetDescription();
             DataArray = array.Skip(5).Take(DataLength).ToArray(); //提取有效字节

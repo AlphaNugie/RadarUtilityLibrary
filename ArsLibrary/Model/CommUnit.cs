@@ -1,4 +1,5 @@
 ﻿//using CommonLib.Helpers;
+using CommonLib.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,17 +15,11 @@ namespace ArsLibrary.Model
     public class CommUnit
     {
         //private readonly string _baseDir = @"D:\AntiCollDataLogs\";
-        private readonly string _baseDir;
+        private readonly string _baseDir = @"AntiCollDataLogs\";
         //private FileStream _fileStream;
         private StreamWriter _streamWriter;
         private bool _firstCycle; //首次写入
 
-        /// <summary>
-        /// 当前环境（平台）中的目录分隔符（字符）
-        /// </summary>
-        internal static char DirSeparatorChar { get => System.IO.Path.DirectorySeparatorChar; }
-
-        #region 公有属性
         /// <summary>
         /// IP地址
         /// </summary>
@@ -47,7 +42,7 @@ namespace ArsLibrary.Model
 
         private string _path = string.Empty/*, _pathPrev = string.Empty*/;
         /// <summary>
-        /// 保存的基础路径
+        /// 日志所在路径
         /// </summary>
         public string Path
         {
@@ -60,12 +55,12 @@ namespace ArsLibrary.Model
                 //_pathPrev = _path;
                 _path = value;
                 //_path += FileSystemHelper.DirSeparatorChar + DateTime.Now.ToString("HHmmss"); //添加时间文件夹
-                string pathSec = _path + DirSeparatorChar + DateTime.Now.ToString("HH0000"); //添加时间文件夹
+                string pathSec = _path + FileSystemHelper.DirSeparatorChar + DateTime.Now.ToString("HH0000"); //添加时间文件夹
                 if (!Directory.Exists(pathSec))
                     Directory.CreateDirectory(pathSec);
                 //FullFilePath = string.Format("{0}{1}{2}_{3}.csv", FileSystemHelper.TrimFilePath(_path), FileSystemHelper.DirSeparatorChar, Name, DateTimeHelper.GetTimeStampBySeconds());
-                FullFilePath = string.Format("{1}{0}{2}_{3:HHmmssfff}.csv", DirSeparatorChar, pathSec.Trim(new char[] { DirSeparatorChar }), Name, DateTime.Now);
-                _streamWriter = new StreamWriter(FullFilePath, true) { AutoFlush = true };
+                FullFilePath = string.Format("{1}{0}{2}_{3:HHmmssfff}.csv", FileSystemHelper.DirSeparatorChar, FileSystemHelper.TrimFilePath(pathSec), Name, DateTime.Now);
+                _streamWriter = new StreamWriter(FullFilePath, true, Encoding.GetEncoding("GB2312")) { AutoFlush = true }; //使用ANSI编码，防止中文乱码
                 _firstCycle = true;
             }
         }
@@ -94,7 +89,6 @@ namespace ArsLibrary.Model
         /// 用于写入的数据源
         /// </summary>
         public string DataSource { get; set; }
-        #endregion
 
         /// <summary>
         /// 通讯单元
@@ -105,7 +99,8 @@ namespace ArsLibrary.Model
         /// <param name="note">备注</param>
         public CommUnit(string remote_ip, ushort port, string name, string note)
         {
-            _baseDir = string.Format("{0}AntiCollDataLogs{1}", Directory.GetDirectoryRoot(AppDomain.CurrentDomain.BaseDirectory), DirSeparatorChar);
+            var dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            _baseDir = dirInfo.Root.ToString() + _baseDir;
             RemoteIp = remote_ip;
             Port = port;
             Name = name;

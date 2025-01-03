@@ -1,5 +1,6 @@
 ﻿using ArsLibrary.Core;
 using CommonLib.Extensions;
+using CommonLib.Extensions.Property;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,26 +30,31 @@ namespace ArsLibrary.Model
         /// <summary>
         /// 纵向的相对加速度（x）的标准差，米/平方秒
         /// </summary>
+        [PropertyMapperTo("ArelLongRms")]
         public SignalValue ArelLongRms { get; set; }
 
         /// <summary>
         /// 横向的相对加速度（y）的标准差，米/平方秒
         /// </summary>
+        [PropertyMapperTo("ArelLatRms")]
         public SignalValue ArelLatRms { get; set; }
 
         /// <summary>
         /// 方位角标准差
         /// </summary>
+        [PropertyMapperTo("OrientationRms")]
         public SignalValue_Degree OrientationRms { get; set; }
 
         /// <summary>
         /// 测量状态，指示目标是否有效
         /// </summary>
+        [PropertyMapperTo("MeasState")]
         public MeasState MeasState { get; set; }
 
         /// <summary>
         /// 存在概率
         /// </summary>
+        [PropertyMapperTo("ProbOfExist")]
         public ProbOfExist ProbOfExist { get; set; }
         #endregion
 
@@ -64,6 +70,27 @@ namespace ArsLibrary.Model
         public ObjectQuality(BaseMessage message)
         {
             Base = message;
+        }
+
+        /// <summary>
+        /// 获取目标质量信息的副本
+        /// </summary>
+        /// <returns></returns>
+        public override SensorQuality Copy()
+        {
+            return new ObjectQuality
+            {
+                Id = Id,
+                DistLongRms = DistLongRms,
+                DistLatRms = DistLatRms,
+                VrelLongRms = VrelLongRms,
+                VrelLatRms = VrelLatRms,
+                ArelLongRms = ArelLongRms,
+                ArelLatRms = ArelLatRms,
+                OrientationRms = OrientationRms,
+                ProbOfExist = ProbOfExist,
+                MeasState = MeasState
+            };
         }
 
         /// <summary>
@@ -95,6 +122,12 @@ namespace ArsLibrary.Model
     /// </summary>
     public enum SignalValue_Degree
     {
+        /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
+
         /// <summary>
         /// 小于0.005
         /// </summary>
@@ -294,6 +327,12 @@ namespace ArsLibrary.Model
     public enum MeasState
     {
         /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
+
+        /// <summary>
         /// 被删除，ID消失前的最后一轮数据传输中出现
         /// </summary>
         [EnumDescription("被删除")]
@@ -335,6 +374,12 @@ namespace ArsLibrary.Model
     /// </summary>
     public enum ProbOfExist
     {
+        /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
+
         /// <summary>
         /// 无效
         /// </summary>

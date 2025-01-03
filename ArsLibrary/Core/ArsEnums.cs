@@ -8,43 +8,6 @@ using System.Threading.Tasks;
 namespace ArsLibrary.Core
 {
     /// <summary>
-    /// 连接模式
-    /// </summary>
-    public enum ConnectionMode
-    {
-        /// <summary>
-        /// TCP客户端
-        /// </summary>
-        TCP_CLIENT = 1,
-
-        /// <summary>
-        /// UDP
-        /// </summary>
-        UDP = 2,
-
-        /// <summary>
-        /// TCP监听
-        /// </summary>
-        TCP_SERVER = 3
-    }
-
-    /// <summary>
-    /// 传感器模式
-    /// </summary>
-    public enum SensorMode
-    {
-        /// <summary>
-        /// 集群模式
-        /// </summary>
-        Cluster = 0,
-
-        /// <summary>
-        /// 目标模式
-        /// </summary>
-        Object = 1
-    }
-
-    /// <summary>
     /// 传感器消息ID（对应ID为0的传感器），各传感器(ID0-7)对应消息ID计算方式：MsgId = MsgId_0 + SensorId * 0x10
     /// 例如ID为0x210的消息对应传感器ID1
     /// </summary>
@@ -178,6 +141,170 @@ namespace ArsLibrary.Core
     }
 
     /// <summary>
+    /// 集群的动态属性
+    /// </summary>
+    public enum DynProp
+    {
+        /// <summary>
+        /// 移动中
+        /// </summary>
+        [EnumDescription("移动")]
+        Moving = 0x0,
+
+        /// <summary>
+        /// 静止
+        /// </summary>
+        [EnumDescription("静止")]
+        Stationary = 0x1,
+
+        /// <summary>
+        /// 迎面而来
+        /// </summary>
+        [EnumDescription("来向")]
+        Oncoming = 0x2,
+
+        /// <summary>
+        /// 疑似的静止点
+        /// </summary>
+        [EnumDescription("可能静止")]
+        StationaryCandidate = 0x3,
+
+        /// <summary>
+        /// 未知
+        /// </summary>
+        [EnumDescription("未知")]
+        Unknown = 0x4,
+
+        /// <summary>
+        /// 横穿静止
+        /// </summary>
+        [EnumDescription("横穿静止")]
+        CrossingStationary = 0x5,
+
+        /// <summary>
+        /// 横穿移动
+        /// </summary>
+        [EnumDescription("横穿移动")]
+        CrossingMoving = 0x6,
+
+        /// <summary>
+        /// 停止（移动转静止？）
+        /// </summary>
+        [EnumDescription("停止")]
+        Stopped = 0x7
+    }
+
+    /// <summary>
+    /// 连接模式
+    /// </summary>
+    public enum ConnectionMode
+    {
+        /// <summary>
+        /// TCP客户端
+        /// </summary>
+        TCP_CLIENT = 1,
+
+        /// <summary>
+        /// UDP
+        /// </summary>
+        UDP = 2,
+
+        /// <summary>
+        /// TCP监听
+        /// </summary>
+        TCP_SERVER = 3
+    }
+
+    /// <summary>
+    /// 传感器模式
+    /// </summary>
+    public enum SensorMode
+    {
+        /// <summary>
+        /// 集群模式
+        /// </summary>
+        Cluster = 0,
+
+        /// <summary>
+        /// 目标模式
+        /// </summary>
+        Object = 1
+    }
+
+    /// <summary>
+    /// 雷达组类型
+    /// </summary>
+    public enum RadarGroupType
+    {
+        /// <summary>
+        /// 无归属
+        /// </summary>
+        [EnumDescription("无归属")]
+        None = 0,
+
+        /// <summary>
+        /// 臂架
+        /// </summary>
+        [EnumDescription("臂架")]
+        Arm = 1,
+
+        /// <summary>
+        /// 门腿
+        /// </summary>
+        [EnumDescription("门腿")]
+        Feet = 3,
+
+        /// <summary>
+        /// 皮带料流（臂架或尾车）
+        /// </summary>
+        [EnumDescription("皮带料流")]
+        Belt = 4,
+
+        /// <summary>
+        /// 尾车（仅堆料机/装船机）
+        /// </summary>
+        [EnumDescription("尾车")]
+        Tail = 9,
+
+        #region 堆/取料机
+        /// <summary>
+        /// 斗轮（落料口）
+        /// </summary>
+        [EnumDescription("斗轮（落料口）")]
+        Wheel = 2,
+
+        /// <summary>
+        /// 堆取料机配重
+        /// </summary>
+        [EnumDescription("堆取料机配重")]
+        Counterweight = 5,
+        #endregion
+
+        #region 装/卸船机
+        /// <summary>
+        /// 溜筒（料爪）
+        /// </summary>
+        [EnumDescription("溜筒（料爪）")]
+        Bucket = 6,
+        //Bucket = 2,
+
+        /// <summary>
+        /// 岸基（门腿向海侧）
+        /// </summary>
+        [EnumDescription("岸基")]
+        Shore = 7,
+        //Shore = 4,
+
+        /// <summary>
+        /// 舱盖
+        /// </summary>
+        [EnumDescription("舱盖")]
+        Hatch = 8,
+        //Hatch = 5,
+        #endregion
+    }
+
+    /// <summary>
     /// 方向
     /// </summary>
     public enum Directions
@@ -215,325 +342,11 @@ namespace ArsLibrary.Core
         /// <summary>
         /// 下方
         /// </summary>
-        Down = 6
-    }
-
-    /// <summary>
-    /// 雷达组类型
-    /// </summary>
-    public enum RadarGroupType
-    {
-        /// <summary>
-        /// 无归属
-        /// </summary>
-        [EnumDescription("无归属")]
-        None = 0,
+        Down = 6,
 
         /// <summary>
-        /// 臂架
+        /// 混合方向，当有运动但无法判明哪方在靠近时使用
         /// </summary>
-        [EnumDescription("臂架")]
-        Arm = 1,
-
-        /// <summary>
-        /// 门腿
-        /// </summary>
-        [EnumDescription("门腿")]
-        Feet = 3,
-
-        #region 堆/取料机
-        /// <summary>
-        /// 斗轮（落料口）
-        /// </summary>
-        [EnumDescription("斗轮（落料口）")]
-        Wheel = 2,
-
-        /// <summary>
-        /// 堆取料机悬皮
-        /// </summary>
-        [EnumDescription("堆取料机悬皮")]
-        Belt = 4,
-
-        /// <summary>
-        /// 堆取料机配重
-        /// </summary>
-        [EnumDescription("堆取料机配重")]
-        Counterweight = 5,
-        #endregion
-
-        #region 装/卸船机
-        /// <summary>
-        /// 溜筒（料爪）
-        /// </summary>
-        [EnumDescription("溜筒（料爪）")]
-        Bucket = 6,
-        //Bucket = 2,
-
-        /// <summary>
-        /// 岸基（门腿向海侧）
-        /// </summary>
-        [EnumDescription("岸基")]
-        Shore = 7,
-        //Shore = 4,
-
-        /// <summary>
-        /// 舱盖
-        /// </summary>
-        [EnumDescription("舱盖")]
-        Hatch = 8,
-        //Hatch = 5,
-        #endregion
-    }
-
-    /// <summary>
-    /// 集群的动态属性
-    /// </summary>
-    public enum DynProp
-    {
-        /// <summary>
-        /// 移动中
-        /// </summary>
-        [EnumDescription("移动中")]
-        Moving = 0x0,
-
-        /// <summary>
-        /// 静止
-        /// </summary>
-        [EnumDescription("静止")]
-        Stationary = 0x1,
-
-        /// <summary>
-        /// 迎面而来
-        /// </summary>
-        [EnumDescription("迎面而来")]
-        Oncoming = 0x2,
-
-        /// <summary>
-        /// 备选的静止点（疑似静止？）
-        /// </summary>
-        [EnumDescription("备选静止")]
-        StationaryCandidate = 0x3,
-
-        /// <summary>
-        /// 未知
-        /// </summary>
-        [EnumDescription("未知")]
-        Unknown = 0x4,
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [EnumDescription("Crossing Stationary")]
-        CrossingStationary = 0x5,
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [EnumDescription("Crossing Moving")]
-        CrossingMoving = 0x6,
-
-        /// <summary>
-        /// 停止（移动转静止？）
-        /// </summary>
-        [EnumDescription("停止")]
-        Stopped = 0x7
-    }
-
-    /// <summary>
-    /// 纵向与横向高度、相对速度、相对加速度的标准差的范围
-    /// </summary>
-    public enum SignalValue
-    {
-        /// <summary>
-        /// 小于0.005
-        /// </summary>
-        [EnumDescription("<0.005")]
-        lt0005 = 0x0,
-
-        /// <summary>
-        /// 小于0.006
-        /// </summary>
-        [EnumDescription("<0.006")]
-        lt0006 = 0x1,
-
-        /// <summary>
-        /// 小于0.008
-        /// </summary>
-        [EnumDescription("<0.008")]
-        lt0008 = 0x2,
-
-        /// <summary>
-        /// 小于0.011
-        /// </summary>
-        [EnumDescription("<0.011")]
-        lt0011 = 0x3,
-
-        /// <summary>
-        /// 小于0.014
-        /// </summary>
-        [EnumDescription("<0.014")]
-        lt0014 = 0x4,
-
-        /// <summary>
-        /// 小于0.018
-        /// </summary>
-        [EnumDescription("<0.018")]
-        lt0018 = 0x5,
-
-        /// <summary>
-        /// 小于0.023
-        /// </summary>
-        [EnumDescription("<0.023")]
-        lt0023 = 0x6,
-
-        /// <summary>
-        /// 小于0.029
-        /// </summary>
-        [EnumDescription("<0.029")]
-        lt0029 = 0x7,
-
-        /// <summary>
-        /// 小于0.038
-        /// </summary>
-        [EnumDescription("<0.038")]
-        lt0038 = 0x8,
-
-        /// <summary>
-        /// 小于0.049
-        /// </summary>
-        [EnumDescription("<0.049")]
-        lt0049 = 0x9,
-
-        /// <summary>
-        /// 小于0.063
-        /// </summary>
-        [EnumDescription("<0.063")]
-        lt0063 = 0xA,
-
-        /// <summary>
-        /// 小于0.081
-        /// </summary>
-        [EnumDescription("<0.081")]
-        lt0081 = 0xB,
-
-        /// <summary>
-        /// 小于0.105
-        /// </summary>
-        [EnumDescription("<0.105")]
-        lt0105 = 0xC,
-
-        /// <summary>
-        /// 小于0.135
-        /// </summary>
-        [EnumDescription("<0.135")]
-        lt0135 = 0xD,
-
-        /// <summary>
-        /// 小于0.174
-        /// </summary>
-        [EnumDescription("<0.174")]
-        lt0174 = 0xE,
-
-        /// <summary>
-        /// 小于0.224
-        /// </summary>
-        [EnumDescription("<0.224")]
-        lt0224 = 0xF,
-
-        /// <summary>
-        /// 小于0.288
-        /// </summary>
-        [EnumDescription("<0.288")]
-        lt0288 = 0x10,
-
-        /// <summary>
-        /// 小于0.371
-        /// </summary>
-        [EnumDescription("<0.371")]
-        lt0371 = 0x11,
-
-        /// <summary>
-        /// 小于0.478
-        /// </summary>
-        [EnumDescription("<0.478")]
-        lt0478 = 0x12,
-
-        /// <summary>
-        /// 小于0.616
-        /// </summary>
-        [EnumDescription("<0.616")]
-        lt0616 = 0x13,
-
-        /// <summary>
-        /// 小于0.794
-        /// </summary>
-        [EnumDescription("<0.794")]
-        lt0794 = 0x14,
-
-        /// <summary>
-        /// 小于1.023
-        /// </summary>
-        [EnumDescription("<1.023")]
-        lt1023 = 0x15,
-
-        /// <summary>
-        /// 小于1.317
-        /// </summary>
-        [EnumDescription("<1.317")]
-        lt1317 = 0x16,
-
-        /// <summary>
-        /// 小于1.697
-        /// </summary>
-        [EnumDescription("<1.697")]
-        lt1697 = 0x17,
-
-        /// <summary>
-        /// 小于2.187
-        /// </summary>
-        [EnumDescription("<2.187")]
-        lt2187 = 0x18,
-
-        /// <summary>
-        /// 小于2.817
-        /// </summary>
-        [EnumDescription("<2.817")]
-        lt2817 = 0x19,
-
-        /// <summary>
-        /// 小于3.630
-        /// </summary>
-        [EnumDescription("<3.630")]
-        lt3630 = 0x1A,
-
-        /// <summary>
-        /// 小于4.676
-        /// </summary>
-        [EnumDescription("<4.676")]
-        lt4676 = 0x1B,
-
-        /// <summary>
-        /// 小于6.025
-        /// </summary>
-        [EnumDescription("<6.025")]
-        lt6025 = 0x1C,
-
-        /// <summary>
-        /// 小于7.762
-        /// </summary>
-        [EnumDescription("<7.762")]
-        lt7762 = 0x1D,
-
-        /// <summary>
-        /// 小于10.000
-        /// </summary>
-        [EnumDescription("<10.000")]
-        lt10000 = 0x1E,
-
-        /// <summary>
-        /// 无效数值
-        /// </summary>
-        [EnumDescription("无效数值")]
-        Invalid = 0x1F
+        Mixed = 7
     }
 }

@@ -42,6 +42,16 @@ namespace ArsLibrary.Model
             Base = message;
         }
 
+        //public override SensorMessage Copy()
+        //{
+        //    return new ObjectStatus
+        //    {
+        //        NofObjects = NofObjects,
+        //        MeasCounter = MeasCounter,
+        //        InterfaceVersion = InterfaceVersion
+        //    };
+        //}
+
         /// <summary>
         /// 转换2进制数据
         /// </summary>

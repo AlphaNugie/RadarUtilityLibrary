@@ -117,6 +117,30 @@ namespace ArsLibrary.Model
             Base = message;
         }
 
+        //public override SensorMessage Copy()
+        //{
+        //    return new RadarState
+        //    {
+        //        MemoryWriteStatus = MemoryWriteStatus,
+        //        MemoryReadStatus = MemoryReadStatus,
+        //        MaxDistance = MaxDistance,
+        //        PersistentError = PersistentError,
+        //        Interference = Interference,
+        //        TemperatureError = TemperatureError,
+        //        TemporaryError = TemporaryError,
+        //        VoltageError = VoltageError,
+        //        RadarPower = RadarPower,
+        //        SortIndex = SortIndex,
+        //        SensorId = SensorId,
+        //        MotionRxState = MotionRxState,
+        //        SendExtendedInfo = SendExtendedInfo,
+        //        SendQuality = SendQuality,
+        //        OutputType = OutputType,
+        //        ControlRelay = ControlRelay,
+        //        RcsThreshold = RcsThreshold
+        //    };
+        //}
+
         /// <summary>
         /// 转换2进制数据
         /// </summary>
@@ -125,8 +149,7 @@ namespace ArsLibrary.Model
         {
             try
             {
-                MemoryWriteStatus =
-                    Convert.ToByte(binary.Substring(0, 1), 2);
+                MemoryWriteStatus = Convert.ToByte(binary.Substring(0, 1), 2);
                 MemoryReadStatus = Convert.ToByte(binary.Substring(1, 1), 2);
                 MaxDistance = Convert.ToUInt16(binary.Substring(8, 10), 2);
                 PersistentError = Convert.ToByte(binary.Substring(18, 1), 2);

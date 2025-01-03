@@ -4,41 +4,6 @@
         <name>ArsLibrary</name>
     </assembly>
     <members>
-        <member name="T:ArsLibrary.Core.ConnectionMode">
-            <summary>
-            连接模式
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.ConnectionMode.TCP_CLIENT">
-            <summary>
-            TCP客户端
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.ConnectionMode.UDP">
-            <summary>
-            UDP
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.ConnectionMode.TCP_SERVER">
-            <summary>
-            TCP监听
-            </summary>
-        </member>
-        <member name="T:ArsLibrary.Core.SensorMode">
-            <summary>
-            传感器模式
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SensorMode.Cluster">
-            <summary>
-            集群模式
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SensorMode.Object">
-            <summary>
-            目标模式
-            </summary>
-        </member>
         <member name="T:ArsLibrary.Core.SensorMessageId_0">
             <summary>
             传感器消息ID（对应ID为0的传感器），各传感器(ID0-7)对应消息ID计算方式：MsgId = MsgId_0 + SensorId * 0x10
@@ -150,6 +115,141 @@
             继电器控制信息
             </summary>
         </member>
+        <member name="T:ArsLibrary.Core.DynProp">
+            <summary>
+            集群的动态属性
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.DynProp.Moving">
+            <summary>
+            移动中
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.DynProp.Stationary">
+            <summary>
+            静止
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.DynProp.Oncoming">
+            <summary>
+            迎面而来
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.DynProp.StationaryCandidate">
+            <summary>
+            疑似的静止点
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.DynProp.Unknown">
+            <summary>
+            未知
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.DynProp.CrossingStationary">
+            <summary>
+            横穿静止
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.DynProp.CrossingMoving">
+            <summary>
+            横穿移动
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.DynProp.Stopped">
+            <summary>
+            停止（移动转静止？）
+            </summary>
+        </member>
+        <member name="T:ArsLibrary.Core.ConnectionMode">
+            <summary>
+            连接模式
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.ConnectionMode.TCP_CLIENT">
+            <summary>
+            TCP客户端
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.ConnectionMode.UDP">
+            <summary>
+            UDP
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.ConnectionMode.TCP_SERVER">
+            <summary>
+            TCP监听
+            </summary>
+        </member>
+        <member name="T:ArsLibrary.Core.SensorMode">
+            <summary>
+            传感器模式
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.SensorMode.Cluster">
+            <summary>
+            集群模式
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.SensorMode.Object">
+            <summary>
+            目标模式
+            </summary>
+        </member>
+        <member name="T:ArsLibrary.Core.RadarGroupType">
+            <summary>
+            雷达组类型
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.RadarGroupType.None">
+            <summary>
+            无归属
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.RadarGroupType.Arm">
+            <summary>
+            臂架
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.RadarGroupType.Feet">
+            <summary>
+            门腿
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.RadarGroupType.Belt">
+            <summary>
+            皮带料流（臂架或尾车）
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.RadarGroupType.Tail">
+            <summary>
+            尾车（仅堆料机/装船机）
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.RadarGroupType.Wheel">
+            <summary>
+            斗轮（落料口）
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.RadarGroupType.Counterweight">
+            <summary>
+            堆取料机配重
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.RadarGroupType.Bucket">
+            <summary>
+            溜筒（料爪）
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.RadarGroupType.Shore">
+            <summary>
+            岸基（门腿向海侧）
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.RadarGroupType.Hatch">
+            <summary>
+            舱盖
+            </summary>
+        </member>
         <member name="T:ArsLibrary.Core.Directions">
             <summary>
             方向
@@ -190,264 +290,9 @@
             下方
             </summary>
         </member>
-        <member name="T:ArsLibrary.Core.RadarGroupType">
+        <member name="F:ArsLibrary.Core.Directions.Mixed">
             <summary>
-            雷达组类型
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.RadarGroupType.None">
-            <summary>
-            无归属
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.RadarGroupType.Arm">
-            <summary>
-            臂架
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.RadarGroupType.Feet">
-            <summary>
-            门腿
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.RadarGroupType.Wheel">
-            <summary>
-            斗轮（落料口）
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.RadarGroupType.Belt">
-            <summary>
-            堆取料机悬皮
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.RadarGroupType.Counterweight">
-            <summary>
-            堆取料机配重
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.RadarGroupType.Bucket">
-            <summary>
-            溜筒（料爪）
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.RadarGroupType.Shore">
-            <summary>
-            岸基（门腿向海侧）
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.RadarGroupType.Hatch">
-            <summary>
-            舱盖
-            </summary>
-        </member>
-        <member name="T:ArsLibrary.Core.DynProp">
-            <summary>
-            集群的动态属性
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.DynProp.Moving">
-            <summary>
-            移动中
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.DynProp.Stationary">
-            <summary>
-            静止
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.DynProp.Oncoming">
-            <summary>
-            迎面而来
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.DynProp.StationaryCandidate">
-            <summary>
-            备选的静止点（疑似静止？）
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.DynProp.Unknown">
-            <summary>
-            未知
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.DynProp.CrossingStationary">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.DynProp.CrossingMoving">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.DynProp.Stopped">
-            <summary>
-            停止（移动转静止？）
-            </summary>
-        </member>
-        <member name="T:ArsLibrary.Core.SignalValue">
-            <summary>
-            纵向与横向高度、相对速度、相对加速度的标准差的范围
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0005">
-            <summary>
-            小于0.005
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0006">
-            <summary>
-            小于0.006
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0008">
-            <summary>
-            小于0.008
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0011">
-            <summary>
-            小于0.011
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0014">
-            <summary>
-            小于0.014
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0018">
-            <summary>
-            小于0.018
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0023">
-            <summary>
-            小于0.023
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0029">
-            <summary>
-            小于0.029
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0038">
-            <summary>
-            小于0.038
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0049">
-            <summary>
-            小于0.049
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0063">
-            <summary>
-            小于0.063
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0081">
-            <summary>
-            小于0.081
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0105">
-            <summary>
-            小于0.105
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0135">
-            <summary>
-            小于0.135
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0174">
-            <summary>
-            小于0.174
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0224">
-            <summary>
-            小于0.224
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0288">
-            <summary>
-            小于0.288
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0371">
-            <summary>
-            小于0.371
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0478">
-            <summary>
-            小于0.478
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0616">
-            <summary>
-            小于0.616
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt0794">
-            <summary>
-            小于0.794
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt1023">
-            <summary>
-            小于1.023
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt1317">
-            <summary>
-            小于1.317
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt1697">
-            <summary>
-            小于1.697
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt2187">
-            <summary>
-            小于2.187
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt2817">
-            <summary>
-            小于2.817
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt3630">
-            <summary>
-            小于3.630
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt4676">
-            <summary>
-            小于4.676
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt6025">
-            <summary>
-            小于6.025
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt7762">
-            <summary>
-            小于7.762
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.lt10000">
-            <summary>
-            小于10.000
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Core.SignalValue.Invalid">
-            <summary>
-            无效数值
+            混合方向，当有运动但无法判明哪方在靠近时使用
             </summary>
         </member>
         <member name="T:ArsLibrary.Core.ArsConst">
@@ -458,6 +303,21 @@
         <member name="F:ArsLibrary.Core.ArsConst.DEF_DIST">
             <summary>
             默认测距距离
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.ArsConst.EmptyMessage">
+            <summary>
+            空白报文
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.ArsConst.ContentServerPort">
+            <summary>
+            报文分发服务的本地端口号
+            </summary>
+        </member>
+        <member name="P:ArsLibrary.Core.ArsConst.IpAddress_Local">
+            <summary>
+            本地IP地址
             </summary>
         </member>
         <member name="F:ArsLibrary.Core.ArsConst.Pattern_SensorMessage">
@@ -497,22 +357,37 @@
         </member>
         <member name="F:ArsLibrary.Core.ArsConst.OriginalImageEmpty">
             <summary>
-            坐标系图像文件原图
+            坐标系图像文件原图（空白）
             </summary>
         </member>
         <member name="F:ArsLibrary.Core.ArsConst.OriginalImageDouble">
             <summary>
-            坐标系图像文件原图
+            坐标系图像文件原图（double）
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.ArsConst.OriginalImageTriple">
+            <summary>
+            坐标系图像文件原图（triple）
+            </summary>
+        </member>
+        <member name="P:ArsLibrary.Core.ArsConst.ScrollRatio">
+            <summary>
+            图片缩小时（或鼠标滑轮向上滑动时）的缩小比例系数，放大时则是倒数（-1次幂）
+            </summary>
+        </member>
+        <member name="P:ArsLibrary.Core.ArsConst.R">
+            <summary>
+            像素与雷达坐标系单位（m）的比值
+            </summary>
+        </member>
+        <member name="P:ArsLibrary.Core.ArsConst.T">
+            <summary>
+            绘点时点的粗细（直径，像素）
             </summary>
         </member>
         <member name="P:ArsLibrary.Core.ArsConst.ShowDesertedPoints">
             <summary>
             是否显示已被过滤掉的点
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Core.ArsConst.UsePublicRcsRange">
-            <summary>
-            是否使用公共RCS范围
             </summary>
         </member>
         <member name="P:ArsLibrary.Core.ArsConst.RcsMinimum">
@@ -523,6 +398,11 @@
         <member name="P:ArsLibrary.Core.ArsConst.RcsMaximum">
             <summary>
             RCS最大值
+            </summary>
+        </member>
+        <member name="P:ArsLibrary.Core.ArsConst.UsePublicRcsRange">
+            <summary>
+            是否使用公共RCS范围
             </summary>
         </member>
         <member name="P:ArsLibrary.Core.ArsConst.ClusterFilterEnabled">
@@ -550,38 +430,41 @@
             新值检定次数限定值（超过此值则以假定值替代当前值）
             </summary>
         </member>
+        <member name="P:ArsLibrary.Core.ArsConst.IteDistUpperLimit">
+            <summary>
+            迭代距离差的上限（单位米），距离差超过此上限则绝不用新值代替当前值（此上限不受迭代是否启用、是否使用TCP模式影响）
+            </summary>
+        </member>
         <member name="T:ArsLibrary.Core.ArsFunc">
             <summary>
             公共方法
             </summary>
         </member>
-        <member name="M:ArsLibrary.Core.ArsFunc.GetSurfaceAngleV2(System.Collections.Generic.IEnumerable{ArsLibrary.Model.SensorGeneral},System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.String@)">
+        <member name="M:ArsLibrary.Core.ArsFunc.GetWalkingDirection(System.Nullable{System.Double},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Double,System.Boolean)">
             <summary>
-            将所有雷达点拟合为平面，拟合斜率
+            根据输入的参数判断走行的方向
             </summary>
-            <param name="points">数据源</param>
-            <param name="xybias">xy坐标校正值，分别为xy</param>
-            <param name="rangle">左右雷达倾角，分别为左右，向下为正</param>
-            <param name="dist_ex_count">根据距其它点的距离和来排除的点数目，假如大于等于0小于1，则为排除点的比例（可以不排除，不可以全排除）</param>
-            <param name="filterCoeff">离群点过滤系数，标准值为1，越小越严格，为0将过滤掉所有点</param>
-            <param name="extraProc">是否采取额外处理措施（重心斜率相关操作）</param>
-            <param name="message">输出的消息</param>
-            <returns>返回处理的角度，角度越大越倾向于出垛</returns>
+            <param name="walkSpeed">走行速度（米/秒），为null时不参与判断，有值时大于0向前、小于0向后、等于0停止</param>
+            <param name="walkFor">走行是否向前的布尔量，为null与是否向后一起不参与判断，有值时与是否向后均为false代表停止</param>
+            <param name="walkBack">走行是否向后的布尔量，为null与是否向前一起不参与判断，有值时与是否向前均为false代表停止</param>
+            <param name="yawAngle">回转角度值（角度°），大于0时在走行正向右侧，小于0在走行正向左侧，等于0回正</param>
+            <param name="armInField">大臂是否在场地内的布尔量，通常判断方法为回转角度的绝对值是否大于某特定值</param>
+            <returns></returns>
         </member>
-        <member name="M:ArsLibrary.Core.ArsFunc.GetMovingDirection(ArsLibrary.Core.Directions,ArsLibrary.Core.Directions)">
+        <member name="M:ArsLibrary.Core.ArsFunc.GetMovingDirection(ArsLibrary.Core.Directions,ArsLibrary.Core.Directions,ArsLibrary.Core.Directions)">
             <summary>
-            根据给定的行走方向，俯仰方向，回转方向判断臂架运动方向
+            根据给定的行走方向，俯仰方向，回转方向判断臂架运动方向（只当行走与回转方向不相反时）
             </summary>
             <param name="walkDir">行走方向</param>
+            <param name="pitchDir">俯仰方向</param>
             <param name="yawDir">回转方向</param>
             <returns></returns>
         </member>
-        <member name="M:ArsLibrary.Core.ArsFunc.GetSensorIdByMessageId(System.Int32,System.Int32@)">
+        <member name="M:ArsLibrary.Core.ArsFunc.GetOppositeDir(ArsLibrary.Core.Directions)">
             <summary>
-            通过消息ID获取传感器ID与实际的MessageId_0
+            获取相反方向
             </summary>
-            <param name="messageid">消息ID</param>
-            <param name="messageid_0">实际消息ID（排除传感器ID）</param>
+            <param name="dir"></param>
             <returns></returns>
         </member>
         <member name="M:ArsLibrary.Core.ArsFunc.GetWrappedMessage(System.String@)">
@@ -591,21 +474,62 @@
             <param name="input">接收信息</param>
             <returns></returns>
         </member>
+        <member name="M:ArsLibrary.Core.ArsFunc.GetColorByDynProp(ArsLibrary.Core.DynProp)">
+            <summary>
+            根据目标动态属性获取颜色，超出范围默认为黄色
+            </summary>
+            <param name="prop">目标动态属性</param>
+            <returns></returns>
+        </member>
+        <member name="M:ArsLibrary.Core.ArsFunc.GetColorByDynProp(ArsLibrary.Core.DynProp,System.Drawing.Color)">
+            <summary>
+            根据目标动态属性获取颜色，超出范围使用默认颜色
+            </summary>
+            <param name="prop">目标动态属性</param>
+            <param name="_default">默认颜色</param>
+            <returns></returns>
+        </member>
+        <member name="M:ArsLibrary.Core.ArsFunc.GetColorByRcs(System.Double)">
+            <summary>
+            根据雷达散射截面属性获取颜色，超出范围默认为黄色
+            </summary>
+            <param name="r">雷达散射截面</param>
+            <returns></returns>
+        </member>
         <member name="M:ArsLibrary.Core.ArsFunc.GetColorByRcs(System.Double,System.Drawing.Color)">
             <summary>
-            根据雷达散射截面属性获取颜色
+            根据雷达散射截面属性获取颜色，超出范围使用默认颜色
             </summary>
             <param name="r">雷达散射截面</param>
             <param name="_default">默认颜色</param>
             <returns></returns>
         </member>
-        <member name="M:ArsLibrary.Core.ArsFunc.GetColorByDynProp(ArsLibrary.Core.DynProp,System.Drawing.Color)">
+        <member name="M:ArsLibrary.Core.ArsFunc.GetSensorIdByMessageId(System.Int32,System.Int32@)">
             <summary>
-            根据目标动态属性获取颜色
+            通过消息ID获取传感器ID与实际的MessageId_0
             </summary>
-            <param name="prop">目标动态属性</param>
-            <param name="_default">默认颜色</param>
-            <returns></returns>
+            <param name="messageid">输入的消息ID</param>
+            <param name="messageid_0">实际的MessageId_0（排除掉传感器ID）</param>
+            <returns>返回传感器ID（0~7）</returns>
+        </member>
+        <member name="M:ArsLibrary.Core.ArsFunc.FilterRadarDataInFile(System.String)">
+            <summary>
+            获取给定文件地址的数据采集文件内容（目前仅支持ARS404/ARS408），将所有符合格式的帧梳理出来并写入到一个新的文件中
+            <para/>文件名添加后缀_new，假如有时间格式为yyyy-MM-dd HH:mm:ss.fff的字符串则原样保留
+            </summary>
+            <param name="filePath">包含雷达数据的采集文件的完整路径</param>
+            <exception cref="T:System.ArgumentNullException">给定的文件路径为null或空白字符串</exception>
+            <exception cref="T:System.ArgumentException">给定的文件路径所对应的文件不存在</exception>
+        </member>
+        <member name="M:ArsLibrary.Core.ArsFunc.FilterRadarDataInFile(System.String,System.String@)">
+            <summary>
+            获取给定文件地址的数据采集文件内容（目前仅支持ARS404/ARS408），将所有符合格式的帧梳理出来并写入到一个新的文件中
+            <para/>文件名添加后缀_new，假如有时间格式为yyyy-MM-dd HH:mm:ss.fff的字符串则原样保留
+            </summary>
+            <param name="filePath">包含雷达数据的采集文件的完整路径</param>
+            <param name="newFilePath">整理后的采集数据所保存到的新文件路径</param>
+            <exception cref="T:System.ArgumentNullException">给定的文件路径为null或空白字符串</exception>
+            <exception cref="T:System.ArgumentException">给定的文件路径所对应的文件不存在</exception>
         </member>
         <member name="T:ArsLibrary.Core.Anonymous">
             <summary>
@@ -640,6 +564,11 @@
         <member name="F:ArsLibrary.Core.ImageBase64String.ARSCoorDoubleBase64">
             <summary>
             双倍高度的坐标系底图Base64字符串
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Core.ImageBase64String.ARSCoorTripleBase64">
+            <summary>
+            三倍高度的坐标系底图Base64字符串
             </summary>
         </member>
         <member name="T:ArsLibrary.Model.BaseMessage">
@@ -693,65 +622,6 @@
             </summary>
             <param name="input"></param>
         </member>
-        <member name="T:ArsLibrary.Model.ClusterGeneral">
-            <summary>
-            集群基本信息实体类
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ClusterGeneral.Pdh0">
-            <summary>
-            集群的虚警概率（错误报警）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ClusterGeneral.PdhString">
-            <summary>
-            错报概率字符串
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ClusterGeneral.AmbigState">
-            <summary>
-            多普勒（径向速度）不确定的状态
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ClusterGeneral.AmbigStateString">
-            <summary>
-            径向速度不确定的状态字符串
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ClusterGeneral.InvalidState">
-            <summary>
-            集群的有效状态
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ClusterGeneral.InvalidStateString">
-            <summary>
-            有效状态字符串
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.ClusterGeneral.#ctor(ArsLibrary.Model.BaseMessage,ArsLibrary.Model.RadarBase)">
-            <summary>
-            基础信息初始化
-            </summary>
-            <param name="message">基础信息</param>
-            <param name="radar">雷达信息</param>
-        </member>
-        <member name="M:ArsLibrary.Model.ClusterGeneral.#ctor(ArsLibrary.Model.BaseMessage)">
-            <summary>
-            基础信息初始化
-            </summary>
-            <param name="message">基础信息</param>
-        </member>
-        <member name="M:ArsLibrary.Model.ClusterGeneral.#ctor">
-            <summary>
-            默认构造器
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.ClusterGeneral.DataConvert(System.String)">
-            <summary>
-            转换2进制数据
-            </summary>
-            <param name="binary"></param>
-        </member>
         <member name="T:ArsLibrary.Model.ClusterQuality">
             <summary>
             集群重要信息
@@ -798,6 +668,9 @@
             </summary>
             <param name="message">基础信息</param>
         </member>
+        <member name="M:ArsLibrary.Model.ClusterQuality.Copy">
+            <inheritdoc/>
+        </member>
         <member name="M:ArsLibrary.Model.ClusterQuality.DataConvert(System.String)">
             <summary>
             转换2进制数据
@@ -807,6 +680,11 @@
         <member name="T:ArsLibrary.Model.FalseAlarmProbability">
             <summary>
             集群虚警概率的范围
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.FalseAlarmProbability.InvalidValue">
+            <summary>
+            无效值（指给出的值本身没有意义）
             </summary>
         </member>
         <member name="F:ArsLibrary.Model.FalseAlarmProbability.Invalid">
@@ -854,6 +732,11 @@
             不确定状态的类型
             </summary>
         </member>
+        <member name="F:ArsLibrary.Model.AmbigState.InvalidValue">
+            <summary>
+            无效值（指给出的值本身没有意义）
+            </summary>
+        </member>
         <member name="F:ArsLibrary.Model.AmbigState.Invalid">
             <summary>
             无效值
@@ -882,6 +765,11 @@
         <member name="T:ArsLibrary.Model.InvalidState">
             <summary>
             集群的有效状态
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.InvalidState.InvalidValue">
+            <summary>
+            无效值（指给出的值本身没有意义）
             </summary>
         </member>
         <member name="F:ArsLibrary.Model.InvalidState.Valid">
@@ -1021,11 +909,6 @@
             雷达数据写入单元
             </summary>
         </member>
-        <member name="P:ArsLibrary.Model.CommUnit.DirSeparatorChar">
-            <summary>
-            当前环境（平台）中的目录分隔符（字符）
-            </summary>
-        </member>
         <member name="P:ArsLibrary.Model.CommUnit.RemoteIp">
             <summary>
             IP地址
@@ -1048,7 +931,7 @@
         </member>
         <member name="P:ArsLibrary.Model.CommUnit.Path">
             <summary>
-            保存的基础路径
+            日志所在路径
             </summary>
         </member>
         <member name="P:ArsLibrary.Model.CommUnit.FullFilePath">
@@ -1120,296 +1003,42 @@
             </summary>
             <param name="info"></param>
         </member>
-        <member name="T:ArsLibrary.Model.DataFrameBase">
+        <member name="T:ArsLibrary.Model.Mapper.RadarGroup">
             <summary>
-            帧消息处理基础类
+            雷达组实体类
             </summary>
         </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.PushfMaxCount">
+        <member name="P:ArsLibrary.Model.Mapper.RadarGroup.Id">
             <summary>
-            push finalization的最大次数
+            数据库ID
             </summary>
         </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.Radar">
+        <member name="P:ArsLibrary.Model.Mapper.RadarGroup.Name">
             <summary>
-            雷达信息对象
+            雷达组名称
             </summary>
         </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.FilterFlags">
+        <member name="P:ArsLibrary.Model.Mapper.RadarGroup.OwnerShiploaderId">
             <summary>
-            帧消息的过滤条件集合
+            所属装船机ID
             </summary>
         </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.RcsMinimum">
+        <member name="P:ArsLibrary.Model.Mapper.RadarGroup.GroupType">
             <summary>
-            RCS最小值
+            雷达组类型，1 臂架，2 溜桶，3 门腿
             </summary>
         </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.RcsMaximum">
-            <summary>
-            RCS最大值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.RadarState">
-            <summary>
-            雷达状态信息
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.CurrentSensorMode">
-            <summary>
-            当前检测模式
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.BufferSize">
-            <summary>
-            接收缓冲区大小（达到此大小则放入正式数据）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.ActualSize">
-            <summary>
-            接收目标实际数量
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.ListBuffer">
-            <summary>
-            接收缓冲区（存放临时数据，直到接收完一组数据再放入正式数据）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.ListBuffer_AllOther">
-            <summary>
-            接收缓冲区（除合格数据外其它所有数据）（存放临时数据，直到接收完一组数据再放入正式数据）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.ListTrigger">
-            <summary>
-            正式数据
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.ListToSend">
-            <summary>
-            待发送列表
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.GeneralMostThreat">
-            <summary>
-            最具有威胁的集群或目标点
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.DistCoeff">
-            <summary>
-            当前距离值的系数（对于装船机溜筒防碰雷达来说是大臂不完全垂直轨道伸出时的旋转修正系数）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.CurrentDistance">
-            <summary>
-            当前障碍物距离，保留4位小数
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.IteLimitFactor">
-            <summary>
-            迭代过程距离差限定值的比例因子（默认为1）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.ThreatLevel">
-            <summary>
-            报警级数
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.Timer">
-            <summary>
-            雷达无数据输出的计时器（单位：秒）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.DataFrameBase.ThreadCheck">
-            <summary>
-            检查雷达工作状态的线程
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.#ctor(ArsLibrary.Model.RadarBase)">
-            <summary>
-            构造器
-            </summary>
-            <param name="radar">雷达信息对象</param>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.UpdateRadarRcsMinValue">
-            <summary>
-            向雷达数据源更新雷达RCS最小值
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.UpdateRadarRcsMaxValue">
-            <summary>
-            向雷达数据源更新雷达RCS最大值
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.GetDistCoeff">
-            <summary>
-            计算并返回当前距离值的系数（默认返回1，对于装船机溜筒防碰雷达来说是大臂不完全垂直于轨道伸出时的旋转修正系数）
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.ProcessDistanceValue(System.Double)">
-            <summary>
-            根据输入的距离值进行必要的处理并对雷达当前距离CurrentDistance赋值（处理：迭代（所有大机）或向TCP发送数据（装船机））
-            </summary>
-            <param name="value"></param>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.GetThreatLevel">
-            <summary>
-            根据标准计算并返回威胁等级的值
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.ProcessThreatLevelValue(System.Int32)">
-            <summary>
-            根据输入的威胁级数值进行必要的处理并对雷达当前威胁等级ThreatLevel赋值
-            </summary>
-            <param name="value"></param>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.GetIteLimitFactor">
-            <summary>
-            获取迭代方法距离差限定值的比例因子（比如根据雷达类型决定，默认返回1）
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.CheckFilterFlags(ArsLibrary.Model.SensorGeneral)">
-            <summary>
-            检查输入的一般消息对象在各项限制条件下的通过情况（默认不进行操作，对装船机来说是确认坐标点是否在溜筒水平或纵向范围内）
-            </summary>
-            <param name="general">输入的一般消息类对象</param>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.GetSurfaceAngle">
-            <summary>
-            计算并返回雷达所对平面（假如有）在拟合后与水平面的夹角（默认为0）
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.CheckIfRadarsWorking">
-            <summary>
-            循环并累计雷达无数据输出的时间
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.Filter(System.String)">
-            <summary>
-            处理输入的原始雷达数据，对各类消息ID进行分类并分别处理
-            </summary>
-            <param name="input">输入的信息</param>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.DataPush(ArsLibrary.Model.SensorGeneral)">
-            <summary>
-            将一般信息压入缓冲区--雷达分组处理
-            </summary>
-            <param name="general">一般信息对象</param>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.DataQualityUpdate(ArsLibrary.Model.SensorQuality)">
-            <summary>
-            用输入的质量信息去更新一般信息内的字段
-            </summary>
-            <param name="q">输入的质量信息对象</param>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.DataPushFinalize">
-            <summary>
-            结束一个阶段的数据压入，将缓冲区数据汇入正式数据
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.DataFrameBase.IterateDistance(System.Double)">
-            <summary>
-            用新值来迭代距障碍物的距离
-            </summary>
-            <param name="value">新的距离值</param>
-        </member>
-        <member name="T:ArsLibrary.Model.FrameFilterFlags">
-            <summary>
-            帧消息是否通过各项限制范围的过滤
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.FrameFilterFlags.BucketHorizInBound">
-            <summary>
-            溜筒雷达水平方向是否在范围内
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.FrameFilterFlags.BucketVertInBound">
-            <summary>
-            溜筒雷达竖直方向是否在范围内
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.FrameFilterFlags.RcsInBound">
-            <summary>
-            RCS值是否在范围内
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.FrameFilterFlags.RadarCoorsInBound">
-            <summary>
-            是否通过雷达坐标范围的限制
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.FrameFilterFlags.ClaimerCoorsInBound">
-            <summary>
-            是否通过单机坐标范围的限制
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.FrameFilterFlags.AngleInBound">
-            <summary>
-            是否通过角度范围的限制
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.FrameFilterFlags.IsAllInBound">
-            <summary>
-            是否全部通过限制
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="T:ArsLibrary.Model.ObjectGeneral">
-            <summary>
-            目标基本信息实体类
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ObjectGeneral.MeasState">
-            <summary>
-            测量状态，指示目标是否有效
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ObjectGeneral.MeasStateString">
-            <summary>
-            测量状态描述
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ObjectGeneral.ProbOfExist">
-            <summary>
-            存在概率
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ObjectGeneral.ProbOfExistString">
-            <summary>
-            存在概率描述
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.ObjectGeneral.ProbOfExistMinimum">
-            <summary>
-            存在概率的可能最小值
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.ObjectGeneral.#ctor(ArsLibrary.Model.BaseMessage,ArsLibrary.Model.RadarBase)">
-            <summary>
-            基础信息初始化
-            </summary>
-            <param name="message">基础信息</param>
-            <param name="radar">雷达信息</param>
-        </member>
-        <member name="M:ArsLibrary.Model.ObjectGeneral.#ctor(ArsLibrary.Model.BaseMessage)">
-            <summary>
-            基础信息初始化
-            </summary>
-            <param name="message">基础信息</param>
-        </member>
-        <member name="M:ArsLibrary.Model.ObjectGeneral.#ctor">
+        <member name="M:ArsLibrary.Model.Mapper.RadarGroup.#ctor">
             <summary>
             默认构造器
             </summary>
         </member>
-        <member name="M:ArsLibrary.Model.ObjectGeneral.DataConvert(System.String)">
+        <member name="M:ArsLibrary.Model.Mapper.RadarGroup.#ctor(System.Int32,System.String)">
             <summary>
-            转换2进制数据
+            构造器
             </summary>
-            <param name="binary"></param>
+            <param name="id">雷达组ID</param>
+            <param name="name">雷达组名称</param>
         </member>
         <member name="T:ArsLibrary.Model.ObjectQuality">
             <summary>
@@ -1462,6 +1091,12 @@
             </summary>
             <param name="message">基础信息</param>
         </member>
+        <member name="M:ArsLibrary.Model.ObjectQuality.Copy">
+            <summary>
+            获取目标质量信息的副本
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:ArsLibrary.Model.ObjectQuality.DataConvert(System.String)">
             <summary>
             转换2进制数据
@@ -1471,6 +1106,11 @@
         <member name="T:ArsLibrary.Model.SignalValue_Degree">
             <summary>
             方位角的标准差的范围
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue_Degree.InvalidValue">
+            <summary>
+            无效值（指给出的值本身没有意义）
             </summary>
         </member>
         <member name="F:ArsLibrary.Model.SignalValue_Degree.lt0005">
@@ -1638,6 +1278,11 @@
             测量状态，指示目标是否有效
             </summary>
         </member>
+        <member name="F:ArsLibrary.Model.MeasState.InvalidValue">
+            <summary>
+            无效值（指给出的值本身没有意义）
+            </summary>
+        </member>
         <member name="F:ArsLibrary.Model.MeasState.Deleted">
             <summary>
             被删除，ID消失前的最后一轮数据传输中出现
@@ -1671,6 +1316,11 @@
         <member name="T:ArsLibrary.Model.ProbOfExist">
             <summary>
             存在概率
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.ProbOfExist.InvalidValue">
+            <summary>
+            无效值（指给出的值本身没有意义）
             </summary>
         </member>
         <member name="F:ArsLibrary.Model.ProbOfExist.Invalid">
@@ -1750,571 +1400,13 @@
             </summary>
             <param name="binary"></param>
         </member>
-        <member name="T:ArsLibrary.Model.OpcItem">
-            <summary>
-            OPC项对象
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.OpcItem.RecordId">
-            <summary>
-            ID
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.OpcItem.ItemId">
-            <summary>
-            OPC项名称
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.OpcItem.OpcGroupId">
-            <summary>
-            OPC组的ID
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.OpcItem.FieldName">
-            <summary>
-            对应数据源类的字段名称
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.OpcItem.Coeff">
-            <summary>
-            值的系数，默认为0
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.OpcItem.Offset">
-            <summary>
-            值的偏移量，默认为0
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.OpcItem.Enabled">
-            <summary>
-            是否可用
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.OpcItem.#ctor">
-            <summary>
-            默认构造器
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.OpcItem.#ctor(System.Data.DataRow)">
-            <summary>
-            构造器，从公共变量获取属性值，再用给定的DataRow对象覆盖各属性的值
-            </summary>
-            <param name="row"></param>
-        </member>
         <member name="T:ArsLibrary.Model.RadarBase">
             <summary>
-            雷达基础实体类
+            雷达基础类
             </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.RadarBase._previous">
-            <summary>
-            上一个距离
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.RadarBase._current">
-            <summary>
-            当前距离（默认测距距离）
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.RadarBase._threat_level">
-            <summary>
-            威胁级数
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.RadarBase._commUnit">
-            <summary>
-            对应的雷达数据写入单元
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.Infos">
-            <summary>
-            帧消息处理类
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.Id">
-            <summary>
-            ID
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.Name">
-            <summary>
-            雷达名称
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.Code">
-            <summary>
-            雷达代号
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.Working">
-            <summary>
-            工作状态，1 收到数据，0 未收到数据
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.State">
-            <summary>
-            雷达状态信息
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.RefreshInterval">
-            <summary>
-            刷新时间间隔
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.UseGivenValue">
-            <summary>
-            是否使用给定值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ValueGiven">
-            <summary>
-            给定值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.CurrentDistance">
-            <summary>
-            当前障碍物距离
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.SurfaceAngle">
-            <summary>
-            雷达正对的平面拟合后与水平面的夹角
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ThreatLevel">
-            <summary>
-            报警级数
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.IpAddress">
-            <summary>
-            IP地址
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.Port">
-            <summary>
-            端口
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ConnectionMode">
-            <summary>
-            连接模式
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.UsingLocal">
-            <summary>
-            是否使用本地IP与端口
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.IpAddressLocal">
-            <summary>
-            本地IP
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.PortLocal">
-            <summary>
-            本地端口
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.OwnerShiploaderId">
-            <summary>
-            所属大机ID
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.OwnerGroupId">
-            <summary>
-            所属雷达组
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.GroupType">
-            <summary>
-            雷达组类型，1 臂架，2 溜筒，3 门腿
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.DegreeYoz">
-            <summary>
-            第一个角度：YOZ平面内旋转角度
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.DegreeXoy">
-            <summary>
-            第二个角度：XOY平面内旋转角度
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.DegreeXoz">
-            <summary>
-            第三个角度：XOZ平面内旋转角度
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.DegreeBaseYoz">
-            <summary>
-            第四个角度：垂直于地面的轴的整体旋转角度，面向正南为0，面向海（东）为90，面向北为180，面向陆地（西）为270（或-90）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.DegreeGeneral">
-            <summary>
-            第五个角度：垂直于地面的轴的整体旋转角度，面向正南为0，面向海（东）为90，面向北为180，面向陆地（西）为270（或-90）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.XmodifiedRatios">
-            <summary>
-            修改后的X坐标的原XY坐标参数
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.YmodifiedRatios">
-            <summary>
-            修改后的Y坐标的原XY坐标参数
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ZmodifiedRatios">
-            <summary>
-            修改后的Z坐标的原XY坐标参数
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.Direction">
-            <summary>
-            方向：123456，海北陆南上下
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.DefenseMode">
-            <summary>
-            防御模式：1 点，2 线，3 面
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.Offset">
-            <summary>
-            距离校正值，以此值校正距防御边界的距离
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.XOffset">
-            <summary>
-            X坐标校正值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.YOffset">
-            <summary>
-            Y坐标校正值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ZOffset">
-            <summary>
-            Z坐标校正值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.RcsMinimum">
-            <summary>
-            RCS最小值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.RcsMaximum">
-            <summary>
-            RCS最大值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.RadarCoorsLimited">
-            <summary>
-            是否限制雷达坐标系坐标
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.WithinRadarLimit">
-            <summary>
-            限制在雷达坐标范围内或范围外，true则限制在范围内，false则限制在范围外
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.RadarxMin">
-            <summary>
-            雷达坐标系X轴最小值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.RadarxMax">
-            <summary>
-            雷达坐标系x轴最大值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.RadaryMin">
-            <summary>
-            雷达坐标系y轴最小值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.RadaryMax">
-            <summary>
-            雷达坐标系y轴最大值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ClaimerCoorsLimited">
-            <summary>
-            是否限制单机坐标系坐标
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.WithinClaimerLimit">
-            <summary>
-            限制在单机坐标范围内或范围外，true则限制在范围内，false则限制在范围外
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ClaimerxMin">
-            <summary>
-            单机坐标系X轴最小值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ClaimerxMax">
-            <summary>
-            单机坐标系X轴最大值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ClaimeryMin">
-            <summary>
-            单机坐标系y轴最小值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ClaimeryMax">
-            <summary>
-            单机坐标系y轴最大值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ClaimerzMin">
-            <summary>
-            单机坐标系z轴最小值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ClaimerzMax">
-            <summary>
-            单机坐标系z轴最小值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.AngleLimited">
-            <summary>
-            是否限制角度
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.WithinAngleLimit">
-            <summary>
-            限制在角度范围内或范围外，true则限制在范围内，false则限制在范围外
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.AngleMin">
-            <summary>
-            角度最小值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.AngleMax">
-            <summary>
-            角度最大值
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ApplyFilter">
-            <summary>
-            是否应用集群或目标过滤器
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ApplyIteration">
-            <summary>
-            是否应用迭代
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.PushfMaxCount">
-            <summary>
-            push finalization的最大次数，雷达帧的累积周期
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.UsePublicFilters">
-            <summary>
-            是否使用公共过滤条件
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.FalseAlarmFilter">
-            <summary>
-            错误警报概率过滤器
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.AmbigStateFilter">
-            <summary>
-            径向速度不确定性过滤器
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.InvalidStateFilter">
-            <summary>
-            有效性(有效/高概率多目标)
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.MeasStateFilter">
-            <summary>
-            测量状态过滤器
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ProbOfExistFilter">
-            <summary>
-            存在概率过滤器
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.FalseAlarmFilterString">
-            <summary>
-            错误警报概率过滤器
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.AmbigStateFilterString">
-            <summary>
-            径向速度不确定性过滤器
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.InvalidStateFilterString">
-            <summary>
-            有效性(有效/高概率多目标)
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.MeasStateFilterString">
-            <summary>
-            测量状态过滤器
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.ProbOfExistFilterString">
-            <summary>
-            存在概率过滤器
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.RadarBase.Remark">
-            <summary>
-            备注
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.#ctor">
-            <summary>
-            默认构造器
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.#ctor(System.Data.DataRow)">
-            <summary>
-            构造器，从公共变量获取属性值，再用给定的DataRow对象覆盖各属性的值
-            </summary>
-            <param name="row"></param>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.ProcessDistanceValue(System.Double@)">
-            <summary>
-            在给CurrentDistance赋值前对输入的距离值根据需要进行预处理，假如输入值符合需求返回true，否则返回false
-            </summary>
-            <param name="dist">输入的距离值</param>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.GetRadarSignals">
-            <summary>
-            获取CommUnit写入的雷达信号数据（默认为空字符串）
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.GetDataFrameEntity">
-            <summary>
-            初始化并返回继承DataFrameBase的子类的一个实体
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.InitFieldValues">
-            <summary>
-            进行必要的操作以给本地变量赋初始值
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.RefreshRcsLimits">
-            <summary>
-            （从数据源）刷新RCS值范围
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.GetHashCode">
-            <summary>
-            返回此实例的哈希代码
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.Equals(System.Object)">
-            <summary>
-            判断当前实例与某对象是否相等
-            </summary>
-            <param name="obj"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.op_Equality(ArsLibrary.Model.RadarBase,ArsLibrary.Model.RadarBase)">
-            <summary>
-            重新定义的相等符号
-            </summary>
-            <param name="left">左侧实例</param>
-            <param name="right">右侧实例</param>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.op_Inequality(ArsLibrary.Model.RadarBase,ArsLibrary.Model.RadarBase)">
-            <summary>
-            重新定义的不等符号
-            </summary>
-            <param name="left">左侧实例</param>
-            <param name="right">右侧实例</param>
-            <returns></returns>
         </member>
         <member name="M:ArsLibrary.Model.RadarBase.CompareTo(ArsLibrary.Model.RadarBase)">
-            <summary>
-            将当前实例与另一实例相比较，并返回比较结果符号：-1 小于，0 相等，1 大于
-            </summary>
-            <param name="other">与当前实例比较的另一实例</param>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.op_LessThan(ArsLibrary.Model.RadarBase,ArsLibrary.Model.RadarBase)">
-            <summary>
-            重新定义的小于符号
-            </summary>
-            <param name="left">左侧实例</param>
-            <param name="right">右侧实例</param>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.op_LessThanOrEqual(ArsLibrary.Model.RadarBase,ArsLibrary.Model.RadarBase)">
-            <summary>
-            重新定义的小于等于符号
-            </summary>
-            <param name="left">左侧实例</param>
-            <param name="right">右侧实例</param>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.op_GreaterThan(ArsLibrary.Model.RadarBase,ArsLibrary.Model.RadarBase)">
-            <summary>
-            重新定义的大于符号
-            </summary>
-            <param name="left">左侧实例</param>
-            <param name="right">右侧实例</param>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.op_GreaterThanOrEqual(ArsLibrary.Model.RadarBase,ArsLibrary.Model.RadarBase)">
-            <summary>
-            重新定义的大于等于符号
-            </summary>
-            <param name="left">左侧实例</param>
-            <param name="right">右侧实例</param>
-            <returns></returns>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.UpdateRatios">
-            <summary>
-            更新修改后XYZ坐标的系数
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.RadarBase.GetRadarString">
-            <summary>
-            获取雷达信息字符串
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="T:ArsLibrary.Model.CoordinateRatios">
-            <summary>
-            修改后的坐标中原XY坐标的系数
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.CoordinateRatios.Xratio">
-            <summary>
-            原X坐标的系数
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.CoordinateRatios.Yratio">
-            <summary>
-            原Y坐标的系数
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.CoordinateRatios.ToString">
-            <summary>
-            获取字符串描述
-            </summary>
-            <returns></returns>
+            <inheritdoc/>
         </member>
         <member name="T:ArsLibrary.Model.RadarState">
             <summary>
@@ -2428,184 +1520,6 @@
             </summary>
             <param name="binary"></param>
         </member>
-        <member name="T:ArsLibrary.Model.SensorGeneral">
-            <summary>
-            传感器消息一般消息基础类
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.SensorGeneral.DistanceComparison">
-            <summary>
-            根据距检测区的最短距离排序
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.SensorGeneral.HeightComparison">
-            <summary>
-            根据转换后Z坐标的大小排序
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.PushfCounter">
-            <summary>
-            所在帧累积未清除的结算(push finalization)次数
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.Id">
-            <summary>
-            消息ID（编号）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.DistLong">
-            <summary>
-            纵向（x）坐标，米
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.DistLat">
-            <summary>
-            横向（y）坐标，米
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.Angle">
-            <summary>
-            角度
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.Radius">
-            <summary>
-            雷达坐标系内点距离原点的距离
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.VrelLong">
-            <summary>
-            纵向的相对速度（x），米/秒
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.VrelLat">
-            <summary>
-            横向的相对速度（y），米/秒
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.ModiCoors">
-            <summary>
-            转换后的最原始坐标
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.X">
-            <summary>
-            转换后的X坐标（经过偏移处理）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.Y">
-            <summary>
-            转换后的Y坐标（经过偏移处理）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.Z">
-            <summary>
-            转换后的Z坐标（经过偏移处理）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.WithinRadarLimits">
-            <summary>
-            是否处于雷达坐标限制范围内
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.WithinClaimerLimits">
-            <summary>
-            是否处于单机坐标限制范围内
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.WithinAngleLimits">
-            <summary>
-            是否位于角度限制范围内
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.DynProp">
-            <summary>
-            动态属性，指示是否在移动或是否已停止等属性
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.DynPropString">
-            <summary>
-            动态属性的描述
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.Color">
-            <summary>
-            动态属性所对应的颜色
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.RCS">
-            <summary>
-            雷达散射截面(Radar Crossing Section)，单位 dBm2（分贝，转换为平米：10^(0.1*dB)，例如，-10分贝为0.1平方米）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.RCS_M2">
-            <summary>
-            雷达散射截面(Radar Crossing Section)，单位 m2（平方米）
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.Radar">
-            <summary>
-            对应雷达信息
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.DistanceToBorder">
-            <summary>
-            距检测边界的距离，与检测方式（点线面）与雷达朝向（海北陆南）有关
-            </summary>
-        </member>
-        <member name="P:ArsLibrary.Model.SensorGeneral.HelpFlag">
-            <summary>
-            辅助标志（拟合平面时是否曾修正过坐标）
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.SensorGeneral.#ctor(ArsLibrary.Model.BaseMessage,ArsLibrary.Model.RadarBase)">
-            <summary>
-            基础信息初始化
-            </summary>
-            <param name="message">基础信息</param>
-            <param name="radar">雷达信息</param>
-        </member>
-        <member name="M:ArsLibrary.Model.SensorGeneral.DataConvert(System.String)">
-            <summary>
-            将从雷达收到的二进制数据转换为雷达基础信息
-            </summary>
-            <param name="binary"></param>
-        </member>
-        <member name="M:ArsLibrary.Model.SensorGeneral.CalculateAngle">
-            <summary>
-            根据横纵坐标计算角度
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.SensorGeneral.CalculateConvertedCoors">
-            <summary>
-            计算转换后坐标
-            </summary>
-        </member>
-        <member name="M:ArsLibrary.Model.SensorGeneral.CheckIfWithinLimits">
-            <summary>
-            判断纵横坐标、转换后的XYZ坐标与角度是否在给定范围内
-            </summary>
-        </member>
-        <member name="T:ArsLibrary.Model.ModifiedCoordinates">
-            <summary>
-            修改后坐标
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.ModifiedCoordinates.X">
-            <summary>
-            X坐标
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.ModifiedCoordinates.Y">
-            <summary>
-            Y坐标
-            </summary>
-        </member>
-        <member name="F:ArsLibrary.Model.ModifiedCoordinates.Z">
-            <summary>
-            Z坐标
-            </summary>
-        </member>
         <member name="T:ArsLibrary.Model.SensorMessage">
             <summary>
             传感器消息基础类
@@ -2624,7 +1538,7 @@
         </member>
         <member name="T:ArsLibrary.Model.SensorQuality">
             <summary>
-            传感器质量信息基础类
+            传感器重要信息基础类
             </summary>
         </member>
         <member name="P:ArsLibrary.Model.SensorQuality.Id">
@@ -2651,6 +1565,196 @@
             <summary>
             横向的相对速度（y）的标准差，米/秒
             </summary>
+        </member>
+        <member name="M:ArsLibrary.Model.SensorQuality.Copy">
+            <summary>
+            返回一个当前对象的拷贝
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:ArsLibrary.Model.SignalValue">
+            <summary>
+            纵向与横向高度、相对速度、相对加速度的标准差的范围
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.InvalidValue">
+            <summary>
+            无效值（指给出的值本身没有意义）
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0005">
+            <summary>
+            小于0.005
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0006">
+            <summary>
+            小于0.006
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0008">
+            <summary>
+            小于0.008
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0011">
+            <summary>
+            小于0.011
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0014">
+            <summary>
+            小于0.014
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0018">
+            <summary>
+            小于0.018
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0023">
+            <summary>
+            小于0.023
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0029">
+            <summary>
+            小于0.029
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0038">
+            <summary>
+            小于0.038
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0049">
+            <summary>
+            小于0.049
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0063">
+            <summary>
+            小于0.063
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0081">
+            <summary>
+            小于0.081
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0105">
+            <summary>
+            小于0.105
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0135">
+            <summary>
+            小于0.135
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0174">
+            <summary>
+            小于0.174
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0224">
+            <summary>
+            小于0.224
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0288">
+            <summary>
+            小于0.288
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0371">
+            <summary>
+            小于0.371
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0478">
+            <summary>
+            小于0.478
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0616">
+            <summary>
+            小于0.616
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt0794">
+            <summary>
+            小于0.794
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt1023">
+            <summary>
+            小于1.023
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt1317">
+            <summary>
+            小于1.317
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt1697">
+            <summary>
+            小于1.697
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt2187">
+            <summary>
+            小于2.187
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt2817">
+            <summary>
+            小于2.817
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt3630">
+            <summary>
+            小于3.630
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt4676">
+            <summary>
+            小于4.676
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt6025">
+            <summary>
+            小于6.025
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt7762">
+            <summary>
+            小于7.762
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.lt10000">
+            <summary>
+            小于10.000
+            </summary>
+        </member>
+        <member name="F:ArsLibrary.Model.SignalValue.Invalid">
+            <summary>
+            无效数值
+            </summary>
+        </member>
+        <member name="T:ArsLibrary.Tasks.Ars40xContentServerTask">
+            <summary>
+            ARS40X系雷达的报文内容（例如空白报文）分发服务的任务类，ip为指定的本地ip，端口号默认为46334
+            </summary>
+        </member>
+        <member name="M:ArsLibrary.Tasks.Ars40xContentServerTask.Init">
+            <inheritdoc/>
+        </member>
+        <member name="M:ArsLibrary.Tasks.Ars40xContentServerTask.LoopContent">
+            <inheritdoc/>
+        </member>
+        <member name="M:ArsLibrary.Tasks.Ars40xContentServerTask.GetNewInstance">
+            <inheritdoc/>
         </member>
     </members>
 </doc>
