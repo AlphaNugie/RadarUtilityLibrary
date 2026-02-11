@@ -12,3 +12,11 @@
 /UtilityExample/bin/Debug/CommonLib.Function.Fitting.pdb
 /UtilityExample/bin/Debug/ArsLibrary.pdb
 /UtilityExample/obj
+/ArsLibrary/.vs
+/ArsLibrary/bin/Debug/ArsLibrary.dll
+/ArsLibrary/bin/Debug/ArsLibrary.xml
+/ArsLibrary/bin/Debug/CommonLib.dll
+/ArsLibrary/bin/Debug/CommonLib.xml
+/ArsLibrary/bin/Debug/SocketHelper.dll
+/ArsLibrary/bin/Debug/SocketHelper.pdb
+/UtilityExample/.vs
