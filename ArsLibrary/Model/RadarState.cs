@@ -12,10 +12,26 @@ namespace ArsLibrary.Model
     public class RadarState : SensorMessage
     {
         #region 属性
+        private int _working;
         /// <summary>
         /// 是否在工作
+        /// <para/>假如更新过 <see cref="LastReceivedTime"/>，则以最后接收时间与当前时间的差值判断，否则以 <see cref="Working"/> 自身固有的值判断
         /// </summary>
-        public int Working { get; set; }
+        public int Working
+        {
+            get { return !LastReceivedTime.HasValue ? _working : (DateTime.Now - LastReceivedTime.Value).TotalSeconds <= 5 ? 1 : 0; }
+            set { _working = value; }
+        }
+
+        ///// <summary>
+        ///// 是否在工作
+        ///// </summary>
+        //public int Working { get{ return (DateTime.Now - LastReceivedTime).TotalSeconds <= 5 ? 1 : 0; } }
+
+        /// <summary>
+        /// 最后接收时间
+        /// </summary>
+        public DateTime? LastReceivedTime { get; internal set; } = DateTime.Now.AddSeconds(-10);
 
         /// <summary>
         /// 在启动的时候读取配置参数的状态，0 失败，1 成功
@@ -168,6 +184,14 @@ namespace ArsLibrary.Model
                 RcsThreshold = Convert.ToByte(binary.Substring(59, 3), 2);
             }
             catch (Exception) { }
+        }
+
+        /// <summary>
+        /// 更新最后的接收时间
+        /// </summary>
+        public void UpdateReceiveTime()
+        {
+            LastReceivedTime = DateTime.Now;
         }
     }
 }

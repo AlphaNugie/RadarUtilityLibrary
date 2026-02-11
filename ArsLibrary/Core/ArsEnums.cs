@@ -7,6 +7,354 @@ using System.Threading.Tasks;
 
 namespace ArsLibrary.Core
 {
+    #region Object模式
+
+    #region 质量（置信）信息
+    /// <summary>
+    /// 测量状态，指示目标是否有效
+    /// </summary>
+    public enum MeasState
+    {
+        /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
+
+        /// <summary>
+        /// 被删除，ID消失前的最后一轮数据传输中出现
+        /// </summary>
+        [EnumDescription("被删除")]
+        Deleted = 0,
+
+        /// <summary>
+        /// 新出现，ID创建后的第一轮数据传输中出现
+        /// </summary>
+        [EnumDescription("新出现")]
+        New = 1,
+
+        /// <summary>
+        /// 已测量，目标的出现被实际测量证实
+        /// </summary>
+        [EnumDescription("已测量")]
+        Measured = 2,
+
+        /// <summary>
+        /// 预测的，目标的出现无法被实际测量证实
+        /// </summary>
+        [EnumDescription("预测的")]
+        Predicted = 3,
+
+        /// <summary>
+        /// 为合并删除，为与另一个目标合并而被删除
+        /// </summary>
+        [EnumDescription("为合并删除")]
+        DeletedForMerge = 4,
+
+        /// <summary>
+        /// 合并为新的，合并后产生的新目标
+        /// </summary>
+        [EnumDescription("合并为新的")]
+        NewFromMerge = 5
+    }
+
+    /// <summary>
+    /// 存在概率
+    /// </summary>
+    public enum ProbOfExist
+    {
+        /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
+
+        /// <summary>
+        /// 无效
+        /// </summary>
+        [EnumDescription("无效")]
+        [EnumAlias("-1")]
+        Invalid = 0,
+
+        /// <summary>
+        /// 小于25%
+        /// </summary>
+        [EnumDescription("<25%")]
+        [EnumAlias("0")]
+        Lt025 = 1,
+
+        /// <summary>
+        /// 小于50%
+        /// </summary>
+        [EnumDescription("<50%")]
+        [EnumAlias("0.25")]
+        Lt050 = 2,
+
+        /// <summary>
+        /// 小于75%
+        /// </summary>
+        [EnumDescription("<75%")]
+        [EnumAlias("0.5")]
+        Lt075 = 3,
+
+        /// <summary>
+        /// 小于90%
+        /// </summary>
+        [EnumDescription("<90%")]
+        [EnumAlias("0.75")]
+        Lt090 = 4,
+
+        /// <summary>
+        /// 小于99%
+        /// </summary>
+        [EnumDescription("<99%")]
+        [EnumAlias("0.9")]
+        Lt099 = 5,
+
+        /// <summary>
+        /// 小于99.9%
+        /// </summary>
+        [EnumDescription("<99.9%")]
+        [EnumAlias("0.99")]
+        Lt999 = 6,
+
+        /// <summary>
+        /// 小于等于100%
+        /// </summary>
+        [EnumDescription("<=100%")]
+        [EnumAlias("0.999")]
+        Lte100 = 7
+    }
+    #endregion
+
+    #endregion
+
+    #region 仅ARS408/404适用
+
+    #region Cluster模式质量（置信）信息
+    /// <summary>
+    /// 集群虚影概率的范围，越小越好
+    /// </summary>
+    public enum FalseAlarmProbability
+    {
+        /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
+
+        /// <summary>
+        /// 无效数值
+        /// </summary>
+        [EnumDescription("无错报")]
+        Invalid = 0x0,
+
+        /// <summary>
+        /// 小于25%
+        /// </summary>
+        [EnumDescription("<25%")]
+        lt25 = 0x1,
+
+        /// <summary>
+        /// 小于50%
+        /// </summary>
+        [EnumDescription("<50%")]
+        lt50 = 0x2,
+
+        /// <summary>
+        /// 小于75%
+        /// </summary>
+        [EnumDescription("<75%")]
+        lt75 = 0x3,
+
+        /// <summary>
+        /// 小于90%
+        /// </summary>
+        [EnumDescription("<90%")]
+        lt90 = 0x4,
+
+        /// <summary>
+        /// 小于99%
+        /// </summary>
+        [EnumDescription("<99%")]
+        lt99 = 0x5,
+
+        /// <summary>
+        /// 小于99.9%
+        /// </summary>
+        [EnumDescription("<99.9%")]
+        lt999 = 0x6,
+
+        /// <summary>
+        /// 小于等于100%
+        /// </summary>
+        [EnumDescription("<=100%")]
+        lte100 = 0x7
+    }
+
+    /// <summary>
+    /// 不确定状态的类型
+    /// </summary>
+    public enum AmbigState
+    {
+        /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
+
+        /// <summary>
+        /// 无效值
+        /// </summary>
+        [EnumDescription("无效值")]
+        Invalid = 0x0,
+
+        /// <summary>
+        /// 模糊（因为黑暗、模糊等含糊的状态使集群不清晰）
+        /// </summary>
+        [EnumDescription("模糊")]
+        Ambiguous = 0x1,
+
+        /// <summary>
+        /// 意义不明
+        /// </summary>
+        [EnumDescription("Staggered Ramp")]
+        StaggeredRamp = 0x2,
+
+        /// <summary>
+        /// 清晰（一切都很清晰，模糊处已解决）
+        /// </summary>
+        [EnumDescription("清晰")]
+        Unambiguous = 0x3,
+
+        /// <summary>
+        /// 可能的静止点（模糊处已解决，可能有静止的物体）
+        /// </summary>
+        [EnumDescription("可能的静止点")]
+        StationaryCandidates = 0x4
+    }
+
+    /// <summary>
+    /// 集群的有效状态
+    /// </summary>
+    public enum InvalidState
+    {
+        /// <summary>
+        /// 无效值（指给出的值本身没有意义）
+        /// </summary>
+        [EnumDescription("无效值")]
+        InvalidValue = -1,
+
+        /// <summary>
+        /// 有效
+        /// </summary>
+        [EnumDescription("有效")]
+        Valid = 0x0,
+
+        /// <summary>
+        /// Invalid due to low RCS（无效，低RCS）
+        /// </summary>
+        [EnumDescription("无效，低RCS")]
+        Invalid_LowRCS = 0x1,
+
+        /// <summary>
+        /// Invalid due to near-field artefact（无效，近距离干扰）
+        /// </summary>
+        [EnumDescription("无效，近距离干扰")]
+        Invalid_NearFieldArtefact = 0x2,
+
+        /// <summary>
+        /// Invalid far range Cluster because not confirmed in near range（远距离集群无效，由于近距离集群无法确定）
+        /// </summary>
+        [EnumDescription("远距离集群无效，由于近距离集群无法确定")]
+        InvalidFarRangeCluster = 0x3,
+
+        /// <summary>
+        /// Valid Cluster with low RCS（有效集群，低RCS）
+        /// </summary>
+        [EnumDescription("有效集群，低RCS")]
+        ValidCluster_LowRCS = 0x4,
+
+        /// <summary>
+        /// 预留
+        /// </summary>
+        [EnumDescription("预留")]
+        Reserved1 = 0x5,
+
+        /// <summary>
+        /// Invalid Cluster due to high mirror probability（无效集群，高反射概率导致）
+        /// </summary>
+        [EnumDescription("无效集群，高反射概率导致")]
+        InvalidCluster_HighMirrorP = 0x6,
+
+        /// <summary>
+        /// Invalid because outside sensor field of view（无效，由于处在传感器视野外部）
+        /// </summary>
+        [EnumDescription("无效，由于处在传感器视野外部")]
+        Invalid_OutsideSensorFov = 0x7,
+
+        /// <summary>
+        /// Valid Cluster with azimuth correction due to elevation（有效集群，方位角修正后）
+        /// </summary>
+        [EnumDescription("有效集群，方位角修正后")]
+        ValidCluster_AzimuthCorrection = 0x8,
+
+        /// <summary>
+        /// Valid Cluster with high child probability
+        /// </summary>
+        [EnumDescription("Valid Cluster with high child probability")]
+        ValidCluster_HighChildP = 0x9,
+
+        /// <summary>
+        /// Valid Cluster with high probability of being a 50 deg artefact（有效集群，很可能存在一个50°的假象）
+        /// </summary>
+        [EnumDescription("有效集群，很可能存在一个50°的假象")]
+        ValidCluster_50DegArtefact = 0xa,
+
+        /// <summary>
+        /// Valid Cluster but no local maximum（有效集群，但没有本地最大值）
+        /// </summary>
+        [EnumDescription("有效集群，但没有本地最大值")]
+        ValidCluster_NoLocalMaximum = 0xb,
+
+        /// <summary>
+        /// Valid Cluster with high artefact probability（有效集群，有高概率产生假象）
+        /// </summary>
+        [EnumDescription("有效集群，有高概率产生假象")]
+        ValidCluster_HighArtefactP = 0xc,
+
+        /// <summary>
+        /// 预留
+        /// </summary>
+        [EnumDescription("预留")]
+        Reserved2 = 0xd,
+
+        /// <summary>
+        /// Invalid Cluster because it is a harmonics（无效集群，只是谐波）
+        /// </summary>
+        [EnumDescription("无效集群，只是谐波")]
+        InvalidCluster_Harmonics = 0xe,
+
+        /// <summary>
+        /// Valid Cluster above 95 m in near range（有效集群，近距离超过95米）
+        /// </summary>
+        [EnumDescription("有效集群，近距离超过95米")]
+        ValidCluster_95mNearRange = 0xf,
+
+        /// <summary>
+        /// Valid Cluster with high multi-target probability（无效集群，较高概率有多目标）
+        /// </summary>
+        [EnumDescription("有效集群，较高概率有多目标")]
+        ValidCluster_HighMultiTargetP = 0x10,
+
+        /// <summary>
+        /// Valid Cluster with suspicious angle（有效集群，有可疑角度）
+        /// </summary>
+        [EnumDescription("有效集群，有可疑角度")]
+        ValidCluster_SuspiciousAngle = 0x11
+    }
+    #endregion
+
     /// <summary>
     /// 传感器消息ID（对应ID为0的传感器），各传感器(ID0-7)对应消息ID计算方式：MsgId = MsgId_0 + SensorId * 0x10
     /// 例如ID为0x210的消息对应传感器ID1
@@ -194,6 +542,29 @@ namespace ArsLibrary.Core
         Stopped = 0x7
     }
 
+    #endregion
+
+    /// <summary>
+    /// 雷达类型
+    /// </summary>
+    public enum RadarModel
+    {
+        /// <summary>
+        /// ARS408-XXX系列，兼容ARS404
+        /// </summary>
+        Ars408_404 = 1,
+
+        /// <summary>
+        /// RHP P19/H06系列，俗称大白壳
+        /// </summary>
+        Rhd_P19 = 2,
+
+        /// <summary>
+        /// FD-RSH300-AE，3D雷达，目前仅在日照使用(2026-1-26)
+        /// </summary>
+        Fd_Rsh300_Ae = 3
+    }
+
     /// <summary>
     /// 连接模式
     /// </summary>
@@ -228,7 +599,12 @@ namespace ArsLibrary.Core
         /// <summary>
         /// 目标模式
         /// </summary>
-        Object = 1
+        Object = 1,
+
+        /// <summary>
+        /// 未知
+        /// </summary>
+        Unknown = 2
     }
 
     /// <summary>
@@ -348,5 +724,26 @@ namespace ArsLibrary.Core
         /// 混合方向，当有运动但无法判明哪方在靠近时使用
         /// </summary>
         Mixed = 7
+    }
+
+    /// <summary>
+    /// 防御模式
+    /// </summary>
+    public enum DefenseMode
+    {
+        /// <summary>
+        /// 点
+        /// </summary>
+        Vertex = 1,
+
+        /// <summary>
+        /// 线
+        /// </summary>
+        Line = 2,
+
+        /// <summary>
+        /// 面
+        /// </summary>
+        Face = 3
     }
 }

@@ -1,4 +1,6 @@
 ﻿//using ArsLibrary.Model;
+using ArsLibrary.Model;
+using ArsLibrary.Model.Rhd;
 using CommonLib.Extensions;
 using CommonLib.Function.Fitting;
 using System;
@@ -18,29 +20,14 @@ namespace ArsLibrary.Core
     /// </summary>
     public struct ArsConst
     {
-        /// <summary>
-        /// 默认测距距离
-        /// </summary>
-        public const double DEF_DIST = 50;
+        #region ARS408/404
 
         /// <summary>
-        /// 空白报文
+        /// ARS408/404空白报文
         /// </summary>
         public const string EmptyMessage = "05 00 00 06 00 00 00 C9 91 10 00 00 00 08 00 00 02 01 40 20 80 01 80 D8 00 00 04 00 00 07 00 5E 22 0D 02 00 00 00 00 05 00 00 06 00 00 00 C9 93 10 00 00 00";
 
-        /// <summary>
-        /// 报文分发服务的本地端口号
-        /// </summary>
-        public const int ContentServerPort = 46443;
-
-        #region 连接
-        /// <summary>
-        /// 本地IP地址
-        /// </summary>
-        public static string IpAddress_Local { get; set; } = string.Empty;
-        #endregion
-
-        #region 正则表达式
+        #region ARS408/404正则表达式
         /// <summary>
         /// 传感器信息的正则表达式
         /// </summary>
@@ -71,6 +58,37 @@ namespace ArsLibrary.Core
         /// </summary>
         public static Regex RegWrapped { get; } = new Regex(Pattern_WrappedStatus, RegexOptions.Compiled);
         //public static Regex RegWrapped { get; } = new Regex(string.Format(Pattern_WrappedStatusTemplate, Pattern_ClusterObjectStatus), RegexOptions.Compiled);
+        #endregion
+
+        #endregion
+
+        /// <summary>
+        /// 默认测距距离
+        /// </summary>
+        public const double DEF_DIST = 50;
+
+        /// <summary>
+        /// 报文分发服务的本地端口号
+        /// </summary>
+        public const int ContentServerPort = 46443;
+
+        #region Sqlite
+        /// <summary>
+        /// Sqlite文件路径，可为相对路径
+        /// </summary>
+        public static string SqliteFileDir { get; set; }
+
+        /// <summary>
+        /// Sqlite文件名称，包括后缀
+        /// </summary>
+        public static string SqliteFileName { get; set; }
+        #endregion
+
+        #region 连接
+        /// <summary>
+        /// 本地IP地址
+        /// </summary>
+        public static string IpAddress_Local { get; set; } = string.Empty;
         #endregion
 
         #region 图形
@@ -170,6 +188,135 @@ namespace ArsLibrary.Core
     /// </summary>
     public static class ArsFunc
     {
+        #region ARS408/404
+        /// <summary>
+        /// 返回接收信息中包含的包裹消息集合
+        /// </summary>
+        /// <param name="input">接收信息</param>
+        /// <returns></returns>
+        public static bool GetWrappedMessage(ref string input)
+        {
+            MatchCollection matches = ArsConst.RegWrapped.Matches(input);
+            bool result = matches != null && matches.Count > 0;
+            input = !result ? string.Empty : matches.Cast<Match>().Last().Value;
+            return result;
+        }
+
+        /// <summary>
+        /// 根据目标动态属性获取颜色，超出范围默认为黄色
+        /// </summary>
+        /// <param name="prop">目标动态属性</param>
+        /// <returns></returns>
+        public static Color GetColorByDynProp(DynProp prop)
+        {
+            return GetColorByDynProp(prop, Color.Yellow);
+        }
+
+        /// <summary>
+        /// 根据目标动态属性获取颜色，超出范围使用默认颜色
+        /// </summary>
+        /// <param name="prop">目标动态属性</param>
+        /// <param name="_default">默认颜色</param>
+        /// <returns></returns>
+        public static Color GetColorByDynProp(DynProp prop, Color _default)
+        {
+            switch (prop)
+            {
+                #region 忽略
+                //case DynProp.Stationary:
+                //    return Color.FromArgb(211, 211, 211);
+                //case DynProp.StationaryCandidate:
+                //    return Color.FromArgb(255, 255, 224);
+                //case DynProp.CrossingStationary:
+                //    return Color.FromArgb(255, 255, 0);
+                //case DynProp.Unknown:
+                //    return Color.FromArgb(245, 245, 220);
+                //case DynProp.CrossingMoving:
+                //    return Color.FromArgb(173, 255, 47);
+                #endregion
+                case DynProp.Moving:
+                    return Color.FromArgb(154, 205, 50);
+                case DynProp.Oncoming:
+                    return Color.FromArgb(0, 255, 127);
+                case DynProp.Stopped:
+                    return Color.FromArgb(255, 69, 0);
+                default:
+                    return _default;
+            }
+        }
+
+        /// <summary>
+        /// 通过消息ID获取传感器ID与实际的MessageId_0
+        /// </summary>
+        /// <param name="messageid">输入的消息ID</param>
+        /// <param name="messageid_0">实际的MessageId_0（排除掉传感器ID）</param>
+        /// <returns>返回传感器ID（0~7）</returns>
+        public static byte GetSensorIdByMessageId(int messageid, out int messageid_0)
+        {
+            byte result = (byte)((messageid % 0x100) / 0x10);
+            messageid_0 = messageid - result * 0x10;
+            return result;
+        }
+
+        /// <summary>
+        /// 获取给定文件地址的数据采集文件内容（目前仅支持ARS404/ARS408），将所有符合格式的帧梳理出来并写入到一个新的文件中
+        /// <para/>文件名添加后缀_new，假如有时间格式为yyyy-MM-dd HH:mm:ss.fff的字符串则原样保留
+        /// </summary>
+        /// <param name="filePath">包含雷达数据的采集文件的完整路径</param>
+        /// <exception cref="ArgumentNullException">给定的文件路径为null或空白字符串</exception>
+        /// <exception cref="ArgumentException">给定的文件路径所对应的文件不存在</exception>
+        public static void FilterRadarDataInFile(string filePath)
+        {
+            FilterRadarDataInFile(filePath, out _);
+        }
+
+        /// <summary>
+        /// 获取给定文件地址的数据采集文件内容（目前仅支持ARS404/ARS408），将所有符合格式的帧梳理出来并写入到一个新的文件中
+        /// <para/>文件名添加后缀_new，假如有时间格式为yyyy-MM-dd HH:mm:ss.fff的字符串则原样保留
+        /// </summary>
+        /// <param name="filePath">包含雷达数据的采集文件的完整路径</param>
+        /// <param name="newFilePath">整理后的采集数据所保存到的新文件路径</param>
+        /// <exception cref="ArgumentNullException">给定的文件路径为null或空白字符串</exception>
+        /// <exception cref="ArgumentException">给定的文件路径所对应的文件不存在</exception>
+        public static void FilterRadarDataInFile(string filePath, out string newFilePath)
+        {
+            newFilePath = string.Empty;
+            if (string.IsNullOrWhiteSpace(filePath))
+                throw new ArgumentNullException(nameof(filePath), "给定的文件地址为空");
+            if (!File.Exists(filePath))
+                throw new ArgumentException(nameof(filePath), "给定的文件不存在");
+            var fileInfo = new FileInfo(filePath);
+            var lines = File.ReadAllLines(filePath);
+            newFilePath = fileInfo.FullName.Remove(fileInfo.FullName.Length - fileInfo.Extension.Length) + "_new" + fileInfo.Extension;
+            Regex pattern = new Regex(ArsConst.Pattern_SensorMessage, RegexOptions.Compiled);
+            foreach (var line in lines)
+            {
+                bool isDateTime = DateTime.TryParseExact(line, "yyyy-MM-dd HH:mm:ss.fff", new CultureInfo("zh-CN"), DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeLocal, out DateTime result);
+                string toWrite = line;
+                if (isDateTime)
+                    goto END_OF_LOOPCONTENT;
+                MatchCollection col = pattern.Matches(line);
+                toWrite = string.Join(" ", col.Cast<Match>().Select(match => match.Value));
+            END_OF_LOOPCONTENT:
+                File.AppendAllLines(newFilePath, new string[] { toWrite });
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// 返回接收信息中包含的包裹消息集合
+        /// </summary>
+        /// <param name="input">接收信息</param>
+        /// <returns></returns>
+        public static bool GetWrappedMessageRhd(ref string input)
+        {
+            MatchCollection matches = ArsConst.RegWrapped.Matches(input);
+            bool result = matches != null && matches.Count > 0;
+            input = !result ? string.Empty : matches.Cast<Match>().Last().Value;
+            return result;
+        }
+
+
         /// <summary>
         /// 根据输入的参数判断走行的方向
         /// </summary>
@@ -195,17 +342,19 @@ namespace ArsLibrary.Core
                 dir = walkSpeed * yawAngle > 0 ? Directions.Left : Directions.Right;
 
             PART2:
+            //需同时提供向前或向后的布尔量才可判断方向，否则不再判断
             if (walkFor == null || walkBack == null) goto END;
-            //假如既没有向前走也没有向后走，则停止
+            //假如既没有向前走也没有向后走，则方向为None（停止）
             if (!walkFor.Value && !walkBack.Value)
                 dir = Directions.None;
             //假如大臂不在堆场范围内（一般因为回转角绝对值过小），则判断是向前还是向后
             else if (!armInField)
-                dir = walkSpeed > 0 ? Directions.Front : Directions.Back;
-            //当行走向前时，回转角小于0相当于向左侧靠近，否则相当于向右侧靠近
+                //dir = walkSpeed > 0 ? Directions.Front : Directions.Back;
+                dir = walkFor.Value ? Directions.Front : Directions.Back;
+            //当大臂在堆场范围内且行走向前时，回转角小于0相当于向左侧靠近，否则相当于向右侧靠近
             else if (walkFor.Value)
                 dir = yawAngle > 0 ? Directions.Left : Directions.Right;
-            //当行走向后时，回转角小于0相当于向左侧靠近，否则相当于向右侧靠近
+            //当大臂在堆场范围内且行走向后时，回转角小于0相当于向左侧靠近，否则相当于向右侧靠近
             else if (walkBack.Value)
                 dir = yawAngle < 0 ? Directions.Left : Directions.Right;
 
@@ -302,62 +451,6 @@ namespace ArsLibrary.Core
         }
 
         /// <summary>
-        /// 返回接收信息中包含的包裹消息集合
-        /// </summary>
-        /// <param name="input">接收信息</param>
-        /// <returns></returns>
-        public static bool GetWrappedMessage(ref string input)
-        {
-            MatchCollection matches = ArsConst.RegWrapped.Matches(input);
-            bool result = matches != null && matches.Count > 0;
-            input = !result ? string.Empty : matches.Cast<Match>().Last().Value;
-            return result;
-        }
-
-        /// <summary>
-        /// 根据目标动态属性获取颜色，超出范围默认为黄色
-        /// </summary>
-        /// <param name="prop">目标动态属性</param>
-        /// <returns></returns>
-        public static Color GetColorByDynProp(DynProp prop)
-        {
-            return GetColorByDynProp(prop, Color.Yellow);
-        }
-
-        /// <summary>
-        /// 根据目标动态属性获取颜色，超出范围使用默认颜色
-        /// </summary>
-        /// <param name="prop">目标动态属性</param>
-        /// <param name="_default">默认颜色</param>
-        /// <returns></returns>
-        public static Color GetColorByDynProp(DynProp prop, Color _default)
-        {
-            switch (prop)
-            {
-                #region 忽略
-                //case DynProp.Stationary:
-                //    return Color.FromArgb(211, 211, 211);
-                //case DynProp.StationaryCandidate:
-                //    return Color.FromArgb(255, 255, 224);
-                //case DynProp.CrossingStationary:
-                //    return Color.FromArgb(255, 255, 0);
-                //case DynProp.Unknown:
-                //    return Color.FromArgb(245, 245, 220);
-                //case DynProp.CrossingMoving:
-                //    return Color.FromArgb(173, 255, 47);
-                #endregion
-                case DynProp.Moving:
-                    return Color.FromArgb(154, 205, 50);
-                case DynProp.Oncoming:
-                    return Color.FromArgb(0, 255, 127);
-                case DynProp.Stopped:
-                    return Color.FromArgb(255, 69, 0);
-                default:
-                    return _default;
-            }
-        }
-
-        /// <summary>
         /// 根据雷达散射截面属性获取颜色，超出范围默认为黄色
         /// </summary>
         /// <param name="r">雷达散射截面</param>
@@ -418,60 +511,20 @@ namespace ArsLibrary.Core
         }
 
         /// <summary>
-        /// 通过消息ID获取传感器ID与实际的MessageId_0
+        /// 是否被包括在黑名单中
         /// </summary>
-        /// <param name="messageid">输入的消息ID</param>
-        /// <param name="messageid_0">实际的MessageId_0（排除掉传感器ID）</param>
-        /// <returns>返回传感器ID（0~7）</returns>
-        public static byte GetSensorIdByMessageId(int messageid, out int messageid_0)
+        /// <param name="blacklists"></param>
+        /// <param name="general"></param>
+        /// <param name="walkPos">走行位置，假如为空则不限制</param>
+        /// <param name="pitchAngle">俯仰角度，假如为空则不限制</param>
+        /// <param name="yawAngle">回转角度，假如为空则不限制</param>
+        /// <param name="stretchLen">伸缩长度，假如为空则不限制</param>
+        /// <returns></returns>
+        public static bool ContainedInBlacklists(this IEnumerable<RadarBlacklist> blacklists, Data general, double? walkPos = null, double? pitchAngle = null, double? yawAngle = null, double? stretchLen = null)
         {
-            byte result = (byte)((messageid % 0x100) / 0x10);
-            messageid_0 = messageid - result * 0x10;
-            return result;
-        }
-
-        /// <summary>
-        /// 获取给定文件地址的数据采集文件内容（目前仅支持ARS404/ARS408），将所有符合格式的帧梳理出来并写入到一个新的文件中
-        /// <para/>文件名添加后缀_new，假如有时间格式为yyyy-MM-dd HH:mm:ss.fff的字符串则原样保留
-        /// </summary>
-        /// <param name="filePath">包含雷达数据的采集文件的完整路径</param>
-        /// <exception cref="ArgumentNullException">给定的文件路径为null或空白字符串</exception>
-        /// <exception cref="ArgumentException">给定的文件路径所对应的文件不存在</exception>
-        public static void FilterRadarDataInFile(string filePath)
-        {
-            FilterRadarDataInFile(filePath, out _);
-        }
-
-        /// <summary>
-        /// 获取给定文件地址的数据采集文件内容（目前仅支持ARS404/ARS408），将所有符合格式的帧梳理出来并写入到一个新的文件中
-        /// <para/>文件名添加后缀_new，假如有时间格式为yyyy-MM-dd HH:mm:ss.fff的字符串则原样保留
-        /// </summary>
-        /// <param name="filePath">包含雷达数据的采集文件的完整路径</param>
-        /// <param name="newFilePath">整理后的采集数据所保存到的新文件路径</param>
-        /// <exception cref="ArgumentNullException">给定的文件路径为null或空白字符串</exception>
-        /// <exception cref="ArgumentException">给定的文件路径所对应的文件不存在</exception>
-        public static void FilterRadarDataInFile(string filePath, out string newFilePath)
-        {
-            newFilePath = string.Empty;
-            if (string.IsNullOrWhiteSpace(filePath))
-                throw new ArgumentNullException(nameof(filePath), "给定的文件地址为空");
-            if (!File.Exists(filePath))
-                throw new ArgumentException(nameof(filePath), "给定的文件不存在");
-            var fileInfo = new FileInfo(filePath);
-            var lines = File.ReadAllLines(filePath);
-            newFilePath = fileInfo.FullName.Remove(fileInfo.FullName.Length - fileInfo.Extension.Length) + "_new" + fileInfo.Extension;
-            Regex pattern = new Regex(ArsConst.Pattern_SensorMessage, RegexOptions.Compiled);
-            foreach (var line in lines)
-            {
-                bool isDateTime = DateTime.TryParseExact(line, "yyyy-MM-dd HH:mm:ss.fff", new CultureInfo("zh-CN"), DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeLocal, out DateTime result);
-                string toWrite = line;
-                if (isDateTime)
-                    goto END_OF_LOOPCONTENT;
-                MatchCollection col = pattern.Matches(line);
-                toWrite = string.Join(" ", col.Cast<Match>().Select(match => match.Value));
-            END_OF_LOOPCONTENT:
-                File.AppendAllLines(newFilePath, new string[] { toWrite });
-            }
+            if (blacklists == null || blacklists.Count() == 0 || general == null)
+                return false;
+            return blacklists.Any(blacklist => blacklist.Contains(general.ToPoint3D(), walkPos, pitchAngle, yawAngle, stretchLen));
         }
     }
 
