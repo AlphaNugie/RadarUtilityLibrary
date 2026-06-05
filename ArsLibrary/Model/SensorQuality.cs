@@ -18,12 +18,12 @@ namespace ArsLibrary.Model
         /// <summary>
         /// 纵向坐标（单位：米）的标准差上限
         /// </summary>
-        public static double DistLongRmsMax { get; set; }
+        public static double DistLongRmsMax { get; set; } = 15;
 
         /// <summary>
         /// 横向坐标（单位：米）的标准差上限
         /// </summary>
-        public static double DistLatRmsMax { get; set; }
+        public static double DistLatRmsMax { get; set; } = 15;
         #endregion
 
         #region 属性
