@@ -246,13 +246,14 @@ namespace ArsLibrary.Core
         }
 
         /// <summary>
-        /// 通过消息ID获取传感器ID与实际的MessageId_0
+        /// 通过消息ID获取传感器ID与实际的MessageId_0（例如消息ID为732，其中传感器ID为3，MessageId_0为702）
         /// </summary>
         /// <param name="messageid">输入的消息ID</param>
         /// <param name="messageid_0">实际的MessageId_0（排除掉传感器ID）</param>
         /// <returns>返回传感器ID（0~7）</returns>
         public static byte GetSensorIdByMessageId(int messageid, out int messageid_0)
         {
+            // result的值由2组16进制数组成，除以0x100后得到低位的一组，传感器ID为低位组的第一个数字（除以0x10获得），messageid_0的值为messageid减去传感器ID乘以16后的值（即排除掉传感器ID后的值）
             byte result = (byte)((messageid % 0x100) / 0x10);
             messageid_0 = messageid - result * 0x10;
             return result;

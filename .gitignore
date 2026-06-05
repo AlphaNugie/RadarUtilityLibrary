@@ -21,3 +21,13 @@
 /ArsLibrary/bin/Debug/SocketHelper.pdb
 /UtilityExample/.vs
 /UtilityExample/bin/Debug/UtilityExample.exe
+/ArsLibrary/bin/Debug/CommonLib.DataUtil.SqliteProviderLibAnyCpu.dll
+/ArsLibrary/bin/Debug/CommonLib.DataUtil.SqliteProviderLibAnyCpu.pdb
+*.pdb
+/UtilityExample/bin/Debug
+/UtilityExample/bin/Debug/ArsLibrary.dll
+/UtilityExample/bin/Debug/ArsLibrary.xml
+/UtilityExample/bin/Debug/CommonLib.DataUtil.SqliteProviderLibAnyCpu.dll
+/UtilityExample/bin/Debug/CommonLib.dll
+/UtilityExample/bin/Debug/CommonLib.xml
+/UtilityExample/bin/Debug/SocketHelper.dll
