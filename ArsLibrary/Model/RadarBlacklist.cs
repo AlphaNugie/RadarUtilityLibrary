@@ -243,44 +243,53 @@ namespace ArsLibrary.Model
 
         /// <summary>
         /// 判断某点的各项属性（反射率（RCS），设备内部坐标，空间坐标，角度）是否在限制范围中，同时还可以判断是否处于单机姿态限制范围内
+        /// 核心逻辑：只要任意一种限制条件被启用，且当前状态处于该限制的范围内，就返回true
         /// </summary>
-        /// <param name="point"></param>
+        /// <param name="point">待检测的三维点</param>
         /// <param name="walkPos">走行位置，假如为空则不限制</param>
         /// <param name="pitchAngle">俯仰角度，假如为空则不限制</param>
         /// <param name="yawAngle">回转角度，假如为空则不限制</param>
         /// <param name="stretchLen">伸缩长度，假如为空则不限制</param>
-        /// <returns></returns>
+        /// <returns>只要任一启用的限制类型处于范围内，返回true；否则返回false</returns>
         public bool Contains(Point3D point, double? walkPos = null, double? pitchAngle = null, double? yawAngle = null, double? stretchLen = null)
         {
-            //假如没有任何一种限制启用，则返回false
-            if (point == null || (!RcsLimited && !RadarCoorsLimited && !ClaimerCoorsLimited && !AngleLimited))
+            // 假如没有任何一种限制启用，或point为空，则返回false
+            if (point == null || (!RcsLimited && !RadarCoorsLimited && !ClaimerCoorsLimited && !AngleLimited && !ClaimerPostureLimited))
                 return false;
-            bool withinRange = true;
-            if (RcsLimited)
-                withinRange = point.Reflectivity.Between(RcsMin, RcsMax);
-            if (!withinRange) goto END;
 
-            if (RadarCoorsLimited)
-                withinRange = point.InterX.Between(RadarxMin, RadarxMax) && point.InterY.Between(RadaryMin, RadaryMax);
-            if (!withinRange) goto END;
+            // 逐一检测每种限制类型：只要该限制启用且在范围内，立即返回true
 
-            if (ClaimerCoorsLimited)
-                withinRange = point.X.Between(ClaimerxMin, ClaimerxMax) && point.Y.Between(ClaimeryMin, ClaimeryMax) && point.Z.Between(ClaimerzMin, ClaimerzMax);
-            if (!withinRange) goto END;
+            // 1. 检测RCS值限制
+            if (RcsLimited && point.Reflectivity.Between(RcsMin, RcsMax))
+                return true;
 
-            if (AngleLimited)
-                withinRange = point.InterAngle.Between(AngleMin, AngleMax);
-            if (!withinRange) goto END;
+            // 2. 检测雷达坐标系限制（InterX/InterY均需在范围内）
+            if (RadarCoorsLimited && point.InterX.Between(RadarxMin, RadarxMax) && point.InterY.Between(RadaryMin, RadaryMax))
+                return true;
 
+            // 3. 检测单机坐标系限制（X/Y/Z均需在范围内）
+            if (ClaimerCoorsLimited && point.X.Between(ClaimerxMin, ClaimerxMax) && point.Y.Between(ClaimeryMin, ClaimeryMax) && point.Z.Between(ClaimerzMin, ClaimerzMax))
+                return true;
+
+            // 4. 检测角度限制
+            if (AngleLimited && point.InterAngle.Between(AngleMin, AngleMax))
+                return true;
+
+            // 5. 检测单机姿态限制
+            // 对于每个可空参数，若为null则视为"不限制该维度"（即该维度自动通过），否则检查是否在范围内
+            // 当 ClaimerPostureLimited 启用时，所有传入的非null参数都必须同时在各自范围内，才算满足此限制类型
             if (ClaimerPostureLimited)
-                //withinRange = (walkPos == null || walkPos.Value.Between(WalkPosMin, WalkPosMax)) && (pitchAngle == null || pitchAngle.Value.Between(PitchAngleMin, PitchAngleMax)) && (yawAngle == null || yawAngle.Value.Between(YawAngleMin, YawAngleMax)) && (stretchLen == null || stretchLen.Value.Between(StretchLenMin, StretchLenMax));
-                withinRange =
-                    walkPos.HasValue && walkPos.Value.Between(WalkPosMin, WalkPosMax) &&
-                    pitchAngle.HasValue && pitchAngle.Value.Between(PitchAngleMin, PitchAngleMax) &&
-                    yawAngle.HasValue && yawAngle.Value.Between(YawAngleMin, YawAngleMax) &&
-                    stretchLen.HasValue && stretchLen.Value.Between(StretchLenMin, StretchLenMax);
-            END:
-            return withinRange;
+            {
+                bool walkPosOk = !walkPos.HasValue || walkPos.Value.Between(WalkPosMin, WalkPosMax);
+                bool pitchAngleOk = !pitchAngle.HasValue || pitchAngle.Value.Between(PitchAngleMin, PitchAngleMax);
+                bool yawAngleOk = !yawAngle.HasValue || yawAngle.Value.Between(YawAngleMin, YawAngleMax);
+                bool stretchLenOk = !stretchLen.HasValue || stretchLen.Value.Between(StretchLenMin, StretchLenMax);
+                if (walkPosOk && pitchAngleOk && yawAngleOk && stretchLenOk)
+                    return true;
+            }
+
+            // 所有启用的限制类型都不在范围内，返回false
+            return false;
         }
     }
 }
