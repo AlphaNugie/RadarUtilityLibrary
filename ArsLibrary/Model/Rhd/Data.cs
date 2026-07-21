@@ -178,7 +178,8 @@ namespace ArsLibrary.Model.Rhd
         /// <returns></returns>
         public Color GetColor()
         {
-            return _colorSmoother.GetColor(Z);
+            //return _colorSmoother.GetColor(Z);
+            return ArsFunc.GetColorByRcs(Rcs, Color.Red);
         }
 
         /// <summary>
