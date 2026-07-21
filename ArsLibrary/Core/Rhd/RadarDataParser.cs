@@ -359,6 +359,7 @@ namespace ArsLibrary.Core.Rhd
                     Rcs = reader.ReadInt16() / config.RcsScaleFactor
                 };
                 data.UpdateCoordinates(data.X, data.Y, data.Z);
+                data.Angle = Data.GetAngle(data.X, data.Y);
                 if (paramSet != null)
                     CoordinateTransformer.TransformPoint(ref data, paramSet);
 				packet.Units.Add(data);
@@ -407,7 +408,8 @@ namespace ArsLibrary.Core.Rhd
                     Speed = reader.ReadInt16() / config.VelocityScaleFactor,
                 };
 				data.UpdateCoordinates(data.X, data.Y, data.Z);
-				if (paramSet != null)
+                data.Angle = Data.GetAngle(data.X, data.Y);
+                if (paramSet != null)
 					CoordinateTransformer.TransformPoint(ref data, paramSet);
 
                 switch (config.ProtocolVersion)

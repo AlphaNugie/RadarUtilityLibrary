@@ -191,6 +191,19 @@ namespace ArsLibrary.Model.Rhd
         }
 
         /// <summary>
+        /// 根据横纵坐标计算角度
+        /// </summary>
+        /// <param name="x">X轴坐标(单位：米)</param>
+        /// <param name="y">Y轴坐标(单位：米，分辨率0.05)</param>
+        /// <returns></returns>
+        public static double GetAngle(double x, double y)
+        {
+            return x == 0 ? Math.Sign(y) * 90 : Math.Atan(y / x) * 180 / Math.PI;
+            //Angle = X == 0 ? Math.Sign(Y) * 90 : Math.Atan(Y / X) * 180 / Math.PI;
+            ////Radius = Math.Sqrt(Math.Pow(X, 2) + Math.Pow(Y, 2));
+        }
+
+        /// <summary>
         /// 此点在雷达坐标系下的坐标是否在范围内
         /// </summary>
         /// <param name="xMin"></param>
