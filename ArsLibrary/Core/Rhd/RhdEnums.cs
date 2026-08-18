@@ -51,7 +51,7 @@ namespace ArsLibrary.Core.Rhd
         /// <summary>
         /// 非机动车
         /// </summary>
-        [EnumDescription("")]
+        [EnumDescription("非机动车")]
         NonMotorVehicle = 3,
     }
 }
