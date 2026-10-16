@@ -111,3 +111,234 @@
 | `PushfCounter` | `int` | 次 | 所在帧累积未清除的结算（push finalization）次数 |
 
 > **注意：** 上述所有属性的 setter 均为 `internal`，仅可在程序集内部赋值，外部调用方只能读取（只读访问），数据由协议解析过程填充。
+
+---
+
+## 聚类（DBSCAN）防碰能力（ArsLibrary.Cluster）
+
+> 类定义位置：`ArsLibrary/Cluster/`（9 个文件），命名空间 `ArsLibrary.Cluster`，编译产物 `ArsLibrary.dll`。
+> 提供与雷达型号、报文格式无关的中性点云模型与「滤波 → 聚类 → 簇特征 → 跨帧跟踪」算法，供各雷达业务项目复用。
+
+### 一、命名空间与物理路径
+
+| 项目 | 说明 |
+|------|------|
+| 仓库相对路径 | `ArsLibrary/Cluster/` |
+| 文件 | `RadarPoint.cs`、`RadarCluster.cs`、`IClusterResultSource.cs`、`PointCloudFilters.cs`、`Dbscan.cs`、`TrackManager.cs`、`Geometry2D.cs`、`ClusterConst.cs`、`ClusterBoxShape.cs` |
+| 命名空间 | `ArsLibrary.Cluster` |
+| 目标框架 | .NET Framework 4.5（未使用 C# 8+ 语法，便于与 net45 业务项目共用） |
+
+设计原则：**与雷达型号、报文格式、坐标系解耦**。ARS408 侧使用 `DistLong/DistLat`、RHD 侧使用 `X/Y/Z`，两套坐标**不同源、不可混用**；由调用方在转换为 `RadarPoint` 时决定语义，库内只认中性 `RadarPoint`。
+
+### 二、文件与类型清单
+
+| 文件 | 类型 | 说明 |
+|------|------|------|
+| `RadarPoint.cs` | `RadarPoint` | 聚类中性点（7 维特征 + 聚类/跟踪标签） |
+| `RadarCluster.cs` | `RadarCluster` / `ClusterBox` | 簇结果实体 / 本体（臂架）盒 |
+| `IClusterResultSource.cs` | `IClusterResultSource` | 绘制侧解耦接口（5 个成员） |
+| `PointCloudFilters.cs` | `PointCloudFilters` | SOR 离群点去除 + 归一化加权 |
+| `Dbscan.cs` | `Dbscan` | 拐点法自适应 eps + DBSCAN + 两类过滤 |
+| `TrackManager.cs` | `TrackManager` / `TrackState` | 跨帧跟踪（贪心最近邻） |
+| `Geometry2D.cs` | `Geometry2D` | 凸包（Andrew monotone chain） |
+| `ClusterConst.cs` | `ClusterConst` | `[Cluster]` 段常量 + `Refresh(IniFileHelper)` |
+| `ClusterBoxShape.cs` | `ClusterBoxShape` | 框形状枚举（0 长方形 / 1 凸包） |
+
+### 三、API 速查
+
+#### 3.1 RadarPoint
+
+| 成员 | 数据类型 | 默认值 | 说明 |
+|------|----------|--------|------|
+| `X` / `Y` / `Z` | `double` | 0 | 纵向 / 横向 / 高度，米（ARS408 侧 `Z` 恒为 0） |
+| `Vx` / `Vy` / `Vz` | `double` | 0 | 纵 / 横 / 垂向相对速度，米/秒（ARS408 侧 `Vz` 恒为 0） |
+| `Rcs` | `double` | 0 | 反射强度，dB |
+| `ClusterId` | `int` | -1 | 簇标签，-1 表示噪声 |
+| `TrackId` | `int` | -1 | 跨帧跟踪 ID，-1 表示未分配 |
+| `SourceIndex` | `int` | -1 | 原始点在传入快照中的索引（回查用） |
+| `DistanceToBorder` | `double` | 0 | 距检测区边界的距离，用于计算簇的报警距离 L |
+| `Radius` | `double` | 0 | 距雷达原点的距离 |
+| `GetFeature(int col)` | `double` | — | 按列号取特征值：`0-X 1-Y 2-Z 3-Vx 4-Vy 5-Vz 6-Rcs`，越界返回 0 |
+
+两套坐标映射（**不同源，不可混用**）：
+
+| RadarPoint | ARS408 `SensorGeneral` | RHD `ArsLibrary.Model.Rhd.Data` |
+|------------|------------------------|----------------------------------|
+| `X` / `Y` / `Z` | `DistLong` / `DistLat` / 0 | `X` / `Y` / `Z` |
+| `Vx` / `Vy` / `Vz` | `VrelLong` / `VrelLat` / 0 | `Vx` / `Vy` / `Vz` |
+| `Rcs` | `RCS` | `Rcs` |
+
+#### 3.2 RadarCluster / ClusterBox
+
+| 成员 | 数据类型 | 说明 |
+|------|----------|------|
+| `Label` | `int` | DBSCAN 原始簇标签 |
+| `TrackId` | `int`（默认 -1） | 跨帧跟踪 ID |
+| `PointCount` | `int` | 簇内点数 |
+| `XMin/XMax`、`YMin/YMax`、`ZMin/ZMax` | `double` | 包围盒（纵 / 横 / 高） |
+| `HeartZ` | `double` | 高度中心（Z 均值），用于高度筛选 |
+| `L` | `double` | 报警距离：`min(DistanceToBorder) − LOffset` |
+| `AverageDistanceToBorder` / `AverageRadius` | `double` | 平均边界距离 / 平均半径（备用） |
+| `W` / `H` | `double` | 宽度 `\|(XMin+XMax)/2\|` / 高度 `ZMax` |
+| `RcsMin` / `RcsAverage` | `double` | 最小 / 平均反射强度 |
+| `IsValid` | `bool` | 有效簇（点数达标 且 高度筛选通过） |
+| `Points` | `List<RadarPoint>` | 簇内点 |
+| `RadarCluster()` / `RadarCluster(int label, List<RadarPoint> points)` | 构造器 | 带参构造同时算好包围盒 / HeartZ / 均值 / W / H |
+| `Evaluate(double lOffset, int minPoints, bool heartZFilterEnabled, double heartZLow, double heartZHigh)` | `void` | 计算 `L` 并判定 `IsValid` |
+| `ToString()` | `string` | `簇{0}(跟踪{1}) 点数{2} L={3:F2} W={4:F2} H={5:F2} Rcs={6:F1} 有效{7}` |
+
+`ClusterBox`：`XMin/XMax/YMin/YMax/ZMin/ZMax` + `bool Contains(RadarPoint point)`（null 返回 false），用于本体 / 臂架盒的保存与剔除判定。
+
+#### 3.3 IClusterResultSource
+
+| 成员 | 类型 | 说明 |
+|------|------|------|
+| `ClusterEnabled` | `bool { get; }` | 全局开关与雷达自身开关同时为真 |
+| `Clusters` | `List<RadarCluster> { get; }` | 最近一次聚类得到的簇列表 |
+| `BestCluster` | `RadarCluster { get; }` | 最危险（L 最小）的有效簇，无有效目标时为 null |
+| `ClusterPoints` | `List<RadarPoint> { get; }` | 最近一次参与聚类的点，含噪声点（`ClusterId = -1`） |
+| `ClusterDistanceSuppressed` | `bool { get; }` | 最近一次结果是否因跳变防抖被抑制而未输出 |
+
+> 备注：业务侧两个帧消息处理类的泛型参数不同、不存在统一非泛型父类，故以本接口解耦；所需成员在实现类中已以公共属性存在，实现接口无需新增成员。
+
+#### 3.4 PointCloudFilters
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `StatisticalOutlierRemoval` | `List<RadarPoint> (List<RadarPoint> points, int k, double nSigma)` | SOR：仅用 X/Y/Z 计算 k 近邻平均距离，超过 `均值 + nSigma × 标准差` 的点剔除；`n < k+1` 或标准差为 0 时原样返回副本；返回新集合、不修改入参 |
+| `NormalizeAndWeight` | `double[][] (List<RadarPoint> points, int[] cols, double[] weights)` | 逐列 Z-score 归一化（**总体标准差，除以 N**，对标 sklearn `StandardScaler`）后乘权重；行=点、列=特征；权重缺失或长度不足按 1 处理，标准差为 0 的列填 0 |
+
+#### 3.5 Dbscan
+
+| 成员 | 签名 | 说明 |
+|------|------|------|
+| `NOISE` | `const int = -1` | 噪声标签（公共常量） |
+| `FindKneeEps` | `double (double[][] feats, int k)` | 拐点法自适应 eps：k 近邻距离排序 → 归一化 → 二阶差分最大点；样本数 < 5、极差过小或膝盖落在端点时兜底回退均值 |
+| `Cluster` | `int[] (double[][] feats, double eps, int minSamples)` | DBSCAN，返回每点标签（`NOISE = -1`）；内部预建距离矩阵，复杂度 O(N²) |
+| `FilterSparseClusters` | `void (double[][] feats, int[] labels, double eps, double ratio)` | 簇内平均最近邻距离 > `ratio × eps` 的**整簇**判为噪声（原地修改 labels） |
+| `FilterIntraClusterOutliers` | `void (double[][] feats, int[] labels, double eps, double ratio)` | 簇内最近邻距离 > `ratio × eps` 的**单点**判回噪声（原地修改 labels） |
+
+#### 3.6 TrackManager / TrackState
+
+| 成员 | 类型 / 签名 | 默认值 / 说明 |
+|------|-------------|----------------|
+| `MaxDistance` | `double { get; set; }` | 3.0，关联距离阈值（观测量之差的绝对值） |
+| `MaxLostFrames` | `int { get; set; }` | 5，最大丢失周期数，超过则删除轨迹 |
+| `TrackCount` | `int { get; }` | 当前存活轨迹数 |
+| `Update` | `Dictionary<int,int> (Dictionary<int,double> keyToValue)` | 贪心最近邻匹配，返回「键 → 跟踪 ID」；未匹配轨迹 `LostCount++`，超过上限删除 |
+| `Reset` | `void ()` | 清空所有轨迹并把 ID 计数器归 1 |
+| `TrackState.Value` | `double { get; set; }` | 最近一次观测量（对应业务侧的报警距离 L） |
+| `TrackState.LostCount` | `int { get; set; }` | 连续丢失周期数 |
+| `TrackState(double value)` | 构造器 | 初始化 `LostCount = 0` |
+
+#### 3.7 Geometry2D
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `ConvexHull` | `List<RadarPoint> (IEnumerable<RadarPoint> points)` | 强类型重载：以 `X`（纵向）为第一坐标、`Y`（横向）为第二坐标 |
+| `ConvexHull<T>` | `List<T> (IEnumerable<T> points, Func<T,double> getX, Func<T,double> getY) where T : class` | 泛型重载（Andrew monotone chain，O(n log n)）；跳过 null 元素 |
+
+> 两个重载均：点集为空返回空列表；**点数不足 3 个或全部共线时返回不足 3 个点的列表，调用方应回退为包围盒**（画面绘制正是据此回退为长方形）。
+
+#### 3.8 ClusterConst
+
+| 分组 | 成员 |
+|------|------|
+| 常量 | `SectionName = "Cluster"` |
+| 开关 | `Enabled`、`SorEnabled`、`ArmBoxEnabled`、`AntiBounceEnabled`、`HeartZFilterEnabled`、`DebugEnabled` |
+| 滤波 | `SorK`、`SorNSigma`、`ClusterCols`、`FeatureWeights` |
+| 聚类 | `KInit`、`MinSamplesInit`、`KDynamic`、`MinSamplesDynamic`、`SparseRatio`、`IntraRatio`、`MaxPoints` |
+| 判定与跟踪 | `LOffset`、`MinClusterPoints`、`HeartZLow`、`HeartZHigh`、`TrackMaxDistance`、`TrackMaxLostFrames`、`AntiBounceLevel`、`BodyBoxMeanYLimit`、`BodyBoxXMinLimit` |
+| 结果显示 | `ClusterBoxEnabled`、`BoxShape`、`BoxColorMode`、`BoxDangerDistance`、`BoxWarnDistance`、`BoxLineWidth`、`BoxFillAlpha`、`BoxShowLabel`、`BoxOnlyValid`、`BoxNoiseDots`、`BoxEmphasizeBest` |
+| 方法 | `double[] GetAlignedWeights()`、`bool IsValidCol(int col)`、`void Refresh(IniFileHelper iniHelper)` |
+
+#### 3.9 ClusterBoxShape
+
+| 枚举成员 | 数值 | 含义 |
+|----------|------|------|
+| `Rectangle` | 0 | 长方形（轴对齐包围盒） |
+| `ConvexHull` | 1 | 不规则凸包多边形（默认） |
+
+### 四、配置段 `[Cluster]` 与 `ClusterConst.Refresh`
+
+段名常量：`ClusterConst.SectionName = "Cluster"`。全部参数由 `public static void Refresh(IniFileHelper iniHelper)` 读取，`IniFileHelper` 来自 `CommonLib.Function`。
+
+调用约定与行为：
+
+- 业务项目在**配置热刷新**处调用一次即可（如 ARS408 的 `Base.cs` 中 `RefreshConfigs`，周期 1 秒）。
+- `iniHelper` 为 null 时直接返回；方法体整体包在 try/catch 中，**读取失败静默跳过，不中断刷新线程**。
+- 每项用 `TryReadValue(section, key, 默认值, out parsed)`：键缺失或解析失败时保留**内存中的当前值**。
+- `ClusterBoxFillAlpha` 钳位到 `[0, 255]`；`ClusterBoxLineWidth` 下限 0.5。
+- `ClusterCols` / `FeatureWeights` 用 `ReadData` + 逗号分割解析，内容为空或空白时不修改。
+
+**注意：4 个显示类参数的 ini 键带 `Cluster` 前缀、属性名不带**，写配置时容易踩坑：
+
+| ini 键 | 属性名 | 默认值 |
+|--------|--------|--------|
+| `ClusterBoxShowLabel` | `BoxShowLabel` | true |
+| `ClusterBoxOnlyValid` | `BoxOnlyValid` | false |
+| `ClusterBoxNoiseDots` | `BoxNoiseDots` | false |
+| `ClusterBoxEmphasizeBest` | `BoxEmphasizeBest` | true |
+
+其余 `ClusterBox*` 键（`ClusterBoxEnabled`、`ClusterBoxShape`、`ClusterBoxColorMode`、`ClusterBoxDangerDistance`、`ClusterBoxWarnDistance`、`ClusterBoxLineWidth`、`ClusterBoxFillAlpha`）与属性名一致。
+
+关键默认值：`Enabled=false`、`SorEnabled=false`、`ArmBoxEnabled=false`、`AntiBounceEnabled=true`、`HeartZFilterEnabled=false`、`DebugEnabled=false`、`SorK=10`、`SorNSigma=2.0`、`ClusterCols={0,1}`、`FeatureWeights={1,1.5}`、`KInit=5`、`MinSamplesInit=5`、`KDynamic=4`、`MinSamplesDynamic=5`、`SparseRatio=1.5`、`IntraRatio=0.7`、`MaxPoints=300`、`LOffset=0`、`MinClusterPoints=2`、`HeartZLow=-1`、`HeartZHigh=0`、`TrackMaxDistance=3.0`、`TrackMaxLostFrames=5`、`AntiBounceLevel=3`、`BodyBoxMeanYLimit=2`、`BodyBoxXMinLimit=20`、`ClusterBoxEnabled=true`、`BoxShape=ConvexHull(1)`、`BoxColorMode=0`、`BoxDangerDistance=3.0`、`BoxWarnDistance=10.0`、`BoxLineWidth=2f`、`BoxFillAlpha=30`。
+
+### 五、被业务项目引用与构建顺序
+
+业务项目（如 ARS408）以 **DLL 直接引用**方式接入，**不是 ProjectReference**，因此 VS 不会自动先建库：
+
+```xml
+<Reference Include="ArsLibrary">
+  <HintPath>..\..\..\Radar\RadarUtilityLibrary\ArsLibrary\bin\Debug\ArsLibrary.dll</HintPath>
+</Reference>
+```
+
+**必须顺序**：① 先生成 `ArsLibrary`（Debug）→ ② 再生成业务项目。只生成业务项目会用到旧的 DLL。
+
+本库 PostBuildEvent 会把产物同步到共享目录：
+
+```
+xcopy /e /r /y /exclude:D:/DLL/_uncopy.txt $(ProjectDir)bin\Debug D:/DLL/
+```
+
+接入三步：① 引用 `ArsLibrary.dll`；② 需要处 `using ArsLibrary.Cluster;`；③ 在配置热刷新处调用 `ClusterConst.Refresh(iniHelper)`。
+
+**留在业务项目、不入库的部分**（因为这些依赖报文类型、帧生命周期、数据库/界面或 WinForms）：报文到 `RadarPoint` 的映射、聚类编排与距离/报警级数的覆盖、雷达开关与数据库/界面、GDI+ 画面绘制。
+
+### 六、依赖
+
+- 直接依赖：`CommonLib`（`CommonLib.Function.IniFileHelper`）、`MathNet.Numerics 4.12.0`、`Newtonsoft.Json 12.0.3`、`protobuf-net 2.4.6`、`SocketHelper`、`System.Data.SQLite`、`System.Drawing`
+- 目标框架：`v4.5`
+
+### 七、变更记录（本次）
+
+### 2026-10-16 — 新增 `ArsLibrary.Cluster` 聚类（DBSCAN）防碰能力
+
+**新增文件：** `ArsLibrary/Cluster/`（`RadarPoint.cs`、`RadarCluster.cs`、`IClusterResultSource.cs`、`PointCloudFilters.cs`、`Dbscan.cs`、`TrackManager.cs`、`Geometry2D.cs`、`ClusterConst.cs`、`ClusterBoxShape.cs`）；`ArsLibrary/ArsLibrary.csproj` 新增 9 条 `Compile`
+
+**问题：** 聚类（DBSCAN）防碰的中性点云模型、算法与配置常量原先写在业务项目内，无法被其它雷达项目复用
+
+**修正内容：**
+- 下沉为公共库命名空间 `ArsLibrary.Cluster`，与雷达型号、报文格式、坐标系解耦
+- `DbscanClusterer` → **`Dbscan`**；`ClusterTrackManager` / `ClusterTrack` → **`TrackManager`** / **`TrackState`**（`L` 改为 `Value`）；`GeometryUtil` → **`Geometry2D`**（新增 `ConvexHull(IEnumerable<RadarPoint>)` 强类型重载）
+- `ClusterConst` 新增 `Refresh(IniFileHelper)`，接管 `[Cluster]` 段全部参数的读取（业务侧 80 余行就地读取改为一行）
+
+**使用说明：**
+- 命名空间 `ArsLibrary.Cluster`；调用方需在配置热刷新处调用 `ClusterConst.Refresh(iniHelper)`
+- 注意 4 个显示类参数的 ini 键带 `Cluster` 前缀而属性名不带
+- 业务项目以 DLL 方式引用 `ArsLibrary.dll`，**必须先生成库再生成业务项目**
+
+---
+
+### 2026-10-16 — 修复 DBSCAN 距离矩阵构建时的空引用崩溃
+
+**修改文件：** `ArsLibrary/Cluster/Dbscan.cs`
+
+**问题：** 启用聚类（`[Cluster] Enabled=1` 且雷达勾选"聚类防碰"）后，`Dbscan.Cluster` 在 `BuildDistanceMatrix` 抛 `System.NullReferenceException`，点数 ≥ 2 时每周期必崩。
+
+**修正内容：**
+- `BuildDistanceMatrix` 原先按"写一行建一行"的方式初始化距离矩阵，但内层循环会写入 `dist[j][i]`（j > i），此时 `dist[j]` 仍为 null。改为先把所有行创建出来，再统一填值。
+- `FindKneeEps` 增加 `feats.Length < 2` 的入口保护：点数为 1 时不存在近邻，原实现会因 `dists` 为空而抛 `ArgumentOutOfRangeException`。
+
+**使用说明：** 属内部实现修复，未改动任何公开签名，二进制兼容。已部署现场需更新 `ArsLibrary.dll`。
