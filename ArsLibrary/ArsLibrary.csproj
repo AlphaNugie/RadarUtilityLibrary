@@ -99,6 +99,15 @@
     <Compile Include="Model\SensorQuality.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tasks\ContentServerTask.cs" />
+    <Compile Include="Cluster\RadarPoint.cs" />
+    <Compile Include="Cluster\RadarCluster.cs" />
+    <Compile Include="Cluster\IClusterResultSource.cs" />
+    <Compile Include="Cluster\PointCloudFilters.cs" />
+    <Compile Include="Cluster\Dbscan.cs" />
+    <Compile Include="Cluster\TrackManager.cs" />
+    <Compile Include="Cluster\Geometry2D.cs" />
+    <Compile Include="Cluster\ClusterConst.cs" />
+    <Compile Include="Cluster\ClusterBoxShape.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\Debug\" />
