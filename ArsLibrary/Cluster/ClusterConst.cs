@@ -116,6 +116,43 @@ namespace ArsLibrary.Cluster
 
         #endregion
 
+        #region 特征量纲与稀疏簇处理
+
+        /// <summary>
+        /// 各列的物理缩放系数（按列号索引：0-X 1-Y 2-Z 3-Vx 4-Vy 5-Vz 6-Rcs）
+        /// 位置列取1表示1米，速度列可取0.1表示0.1米每米每秒，反射强度列取0表示不参与
+        /// 配置了本项时聚类在物理量纲下进行（不再做Z-score归一化），此时：
+        /// 1、自适应eps具有米制含义，可直接用EpsMax限制"多远的点算同一个目标"；
+        /// 2、不会因某一列标准差过小而放大该列权重，大范围密实目标不会被沿某一方向切碎；
+        /// 3、FeatureWeights不再生效，横向等相对权重直接写在本项中（如Y列填1.5）
+        /// 留空（未配置）时退回Z-score归一化模式，此时FeatureWeights才生效
+        /// </summary>
+        public static double[] FeatureScale { get; set; }
+
+        /// <summary>
+        /// 自适应eps的上限（米），0表示不限制
+        /// </summary>
+        public static double EpsMax { get; set; } = 0;
+
+        /// <summary>
+        /// 是否按间隙拆分被桥接的稀疏簇（把多个密实目标被合并成的簇剪开成子簇，各自独立报警）
+        /// </summary>
+        public static bool ClusterSplitEnabled { get; set; } = false;
+
+        /// <summary>
+        /// 拆分阈值：断边阈值的绝对下限（米）
+        /// </summary>
+        public static double ClusterGapMin { get; set; } = 1.5;
+
+        /// <summary>
+        /// 拆分阈值：断边阈值的相对系数（阈值 = ClusterGapRatio × 最小生成树边长中位数）
+        /// 该系数用于区分"两个目标被间隙连起来"与"单个大而密实的目标"：
+        /// 前者的间隙比通常在7以上，后者在1.5以内
+        /// </summary>
+        public static double ClusterGapRatio { get; set; } = 5;
+
+        #endregion
+
         #region 判定与跟踪参数
 
         /// <summary>
@@ -303,6 +340,17 @@ namespace ArsLibrary.Cluster
                     MaxPoints = valuei;
                 #endregion
 
+                #region 特征量纲与稀疏簇处理
+                if (iniHelper.TryReadValue(SectionName, "EpsMax", 0.0, out valued))
+                    EpsMax = valued;
+                if (iniHelper.TryReadValue(SectionName, "ClusterSplitEnabled", false, out valueb))
+                    ClusterSplitEnabled = valueb;
+                if (iniHelper.TryReadValue(SectionName, "ClusterGapMin", 1.5, out valued))
+                    ClusterGapMin = valued;
+                if (iniHelper.TryReadValue(SectionName, "ClusterGapRatio", 5.0, out valued))
+                    ClusterGapRatio = valued;
+                #endregion
+
                 #region 判定与跟踪参数
                 if (iniHelper.TryReadValue(SectionName, "LOffset", 0.0, out valued))
                     LOffset = valued;
@@ -350,12 +398,62 @@ namespace ArsLibrary.Cluster
                 #endregion
 
                 #region 特征列与权重
+                //解析失败时保留内存中的当前值，且不中断后续配置项的读取
                 string clusterCols = iniHelper.ReadData(SectionName, "ClusterCols");
                 if (!string.IsNullOrWhiteSpace(clusterCols))
-                    ClusterCols = clusterCols.Split(',').Select(p => int.Parse(p.Trim())).ToArray();
+                {
+                    List<int> cols = new List<int>();
+                    bool colsOk = true;
+                    foreach (string part in clusterCols.Split(','))
+                    {
+                        int colValue;
+                        if (!int.TryParse(part.Trim(), out colValue) || !IsValidCol(colValue))
+                        {
+                            colsOk = false;
+                            break;
+                        }
+                        cols.Add(colValue);
+                    }
+                    if (colsOk && cols.Count > 0)
+                        ClusterCols = cols.ToArray();
+                }
                 string featureWeights = iniHelper.ReadData(SectionName, "FeatureWeights");
                 if (!string.IsNullOrWhiteSpace(featureWeights))
-                    FeatureWeights = featureWeights.Split(',').Select(p => double.Parse(p.Trim())).ToArray();
+                {
+                    List<double> weights = new List<double>();
+                    bool weightsOk = true;
+                    foreach (string part in featureWeights.Split(','))
+                    {
+                        double weightValue;
+                        if (!double.TryParse(part.Trim(), out weightValue))
+                        {
+                            weightsOk = false;
+                            break;
+                        }
+                        weights.Add(weightValue);
+                    }
+                    if (weightsOk && weights.Count > 0)
+                        FeatureWeights = weights.ToArray();
+                }
+                //各列物理缩放系数：配置了本项则聚类在物理量纲下进行
+                string featureScale = iniHelper.ReadData(SectionName, "FeatureScale");
+                if (!string.IsNullOrWhiteSpace(featureScale))
+                {
+                    List<double> scales = new List<double>();
+                    bool scaleOk = true;
+                    foreach (string part in featureScale.Split(','))
+                    {
+                        double scaleValue;
+                        if (!double.TryParse(part.Trim(), out scaleValue))
+                        {
+                            scaleOk = false;
+                            break;
+                        }
+                        scales.Add(scaleValue);
+                    }
+                    if (scaleOk && scales.Count > 0)
+                        FeatureScale = scales.ToArray();
+                }
                 #endregion
             }
             catch (Exception) { } //配置读取失败不应中断刷新线程

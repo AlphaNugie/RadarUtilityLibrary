@@ -63,6 +63,39 @@ namespace ArsLibrary.Cluster
         }
 
         /// <summary>
+        /// 按列的物理量纲缩放（不做Z-score归一化），缩放系数决定各列的物理含义
+        /// 位置列通常取1（米），速度列可取0.1（米每米每秒），反射强度列若不参与可取0
+        /// 与归一化模式的区别：本模式不会因某一列标准差过小而放大该列的权重，
+        /// 因此大范围密实目标不会被沿某一方向切碎，且自适应eps具有米制含义
+        /// </summary>
+        /// <param name="points">点集</param>
+        /// <param name="cols">特征列号（0-X 1-Y 2-Z 3-Vx 4-Vy 5-Vz 6-Rcs）</param>
+        /// <param name="scales">各列的缩放系数，按列号索引（0-X 1-Y 2-Z 3-Vx 4-Vy 5-Vz 6-Rcs）</param>
+        /// <returns>缩放后的特征矩阵，行对应点、列对应参与的特征列</returns>
+        public static double[][] ApplyScale(List<RadarPoint> points, int[] cols, double[] scales)
+        {
+            if (points == null || points.Count == 0 || cols == null || cols.Length == 0)
+                return new double[0][];
+
+            int n = points.Count, m = cols.Length;
+            double[][] result = new double[n][];
+            for (int i = 0; i < n; i++)
+                result[i] = new double[m];
+
+            for (int c = 0; c < m; c++)
+            {
+                int col = cols[c];
+                double scale = scales != null && col >= 0 && col < scales.Length ? scales[col] : 1;
+                if (scale == 0) //该列不参与计算
+                    continue;
+                for (int i = 0; i < n; i++)
+                    result[i][c] = points[i].GetFeature(col) * scale;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// 聚类特征的Z-score归一化与加权（对应原实现的StandardScaler+feature_weights）
         /// </summary>
         /// <param name="points">点集</param>
