@@ -342,3 +342,68 @@ xcopy /e /r /y /exclude:D:/DLL/_uncopy.txt $(ProjectDir)bin\Debug D:/DLL/
 - `FindKneeEps` 增加 `feats.Length < 2` 的入口保护：点数为 1 时不存在近邻，原实现会因 `dists` 为空而抛 `ArgumentOutOfRangeException`。
 
 **使用说明：** 属内部实现修复，未改动任何公开签名，二进制兼容。已部署现场需更新 `ArsLibrary.dll`。
+
+---
+
+## 特征量纲与稀疏簇处理（新增能力）
+
+> 位置：`ArsLibrary/Cluster/`。在原有聚类能力上补充「特征量纲可选物理量纲」与「稀疏簇按间隙拆分」两项能力，用于解决"距离较远的点被并入同一簇"以及"大范围密实目标被切碎"两类现场问题。
+
+### 一、两种特征量纲模式
+
+| 模式 | 触发条件 | 特征空间 | eps 含义 | 相对权重来源 |
+|---|---|---|---|---|
+| Z-score 归一化（原有） | 未配置 `FeatureScale` | 各列 Z-score（总体标准差）后乘权重 | 归一化单位 | `FeatureWeights` |
+| 物理量纲（新增） | 配置了 `FeatureScale` | 各列原值乘物理缩放系数 | **米** | `FeatureScale` 本身 |
+
+物理量纲模式的意义：
+
+1. **消除"大密实目标被切碎"的副作用**。Z-score 按各列标准差缩放，某列标准差过小时该列距离被放大，导致大范围密实的目标沿该方向被切成多簇。实测 8m×2m 的密实面在归一化模式下被切成 4 簇，物理量纲模式下保持 1 簇。
+2. **eps 具有米制含义**，`EpsMax` 可直接表达"多远的点算作同一个目标"。
+
+> 注意：物理量纲模式下 `FeatureWeights` 不再生效，横向等相对权重直接写进 `FeatureScale`（按列号索引，例 `1,1.5,1,0.1,0.1,0.1,0` 表示纵向 1 米、横向 1.5 倍权重、Z 参与、速度列 0.1 米每米每秒、RCS 不参与）。
+
+### 二、稀疏簇的判定与拆分（最小生成树间隙比）
+
+**不能用坐标跨度判断稀疏**：单个大而密实的目标跨度可以比"两个被合并的目标"还大。改用最小生成树（MST）间隙比：
+
+- 簇内点求 MST，**最长边**即两个密团之间的"桥"；单个大而密实目标的 MST 各边长度接近，不会被误拆。
+- 断边阈值 = `max(ClusterGapMin, ClusterGapRatio × MST边长中位数)`，绝对值与相对值双条件。
+- 实测间隙比：单个密实大目标 1.3~1.4，两个目标被间隙连接 7.5~32.6，两者之间没有模糊地带。
+- 拆分依赖物理量纲（阈值为米），归一化模式下应跳过。
+
+### 三、新增 API
+
+| 成员 | 签名 | 说明 |
+|---|---|---|
+| `PointCloudFilters.ApplyScale` | `double[][] (List<RadarPoint> points, int[] cols, double[] scales)` | 按列的物理量纲缩放，不做 Z-score；`scales` 按列号索引（0-X 1-Y 2-Z 3-Vx 4-Vy 5-Vz 6-Rcs），值为 0 表示该列不参与 |
+| `Dbscan.FindKneeEps` | `double (double[][] feats, int k, double epsMax = 0)` | 新增可选参数 `epsMax`（与 eps 同量纲），大于 0 时对自适应 eps 做上限截断 |
+| `Dbscan.SplitClusterByGap` | `List<List<int>> (double[][] feats, List<int> indices, double gapMin, double gapRatio)` | 用 MST 间隙把一个簇拆成若干子簇，返回各子簇在 `feats` 中的下标集合；无法拆分时返回原簇一项 |
+
+### 四、新增配置项（`[Cluster]` 段）
+
+| ini 键 | 属性名 | 默认值 | 说明 |
+|---|---|---|---|
+| `FeatureScale` | `FeatureScale` | 未配置（为 null） | 各列物理缩放系数，按列号索引；配置后启用物理量纲模式。**不配置则保持原有 Z-score 行为** |
+| `EpsMax` | `EpsMax` | 0 | 自适应 eps 上限（米），0 表示不限制 |
+| `ClusterSplitEnabled` | `ClusterSplitEnabled` | false | 是否按间隙拆分被桥接的稀疏簇 |
+| `ClusterGapMin` | `ClusterGapMin` | 1.5 | 断边阈值的绝对下限（米） |
+| `ClusterGapRatio` | `ClusterGapRatio` | 5 | 断边阈值的相对系数（阈值 = 系数 × MST 边长中位数） |
+
+> 解析健壮性：`FeatureScale`/`ClusterCols`/`FeatureWeights` 均改为 `TryParse` 解析，单项格式错误时保留内存中的当前值，且不再中断其后配置项的读取。
+
+### 五、变更记录（本次）
+
+### 2026-10-21 — 新增物理量纲模式与稀疏簇间隙拆分
+
+**修改文件：** `ArsLibrary/Cluster/PointCloudFilters.cs`、`ArsLibrary/Cluster/Dbscan.cs`、`ArsLibrary/Cluster/ClusterConst.cs`
+
+**问题：** 现场反馈距离较远的点被并入同一簇、簇被撑大而稀疏；同时存在"跨度很大但并不稀疏"的大范围密实目标，不能用跨度判断。
+
+**修正内容：**
+- `PointCloudFilters` 新增 `ApplyScale`，支持不做 Z-score 的物理量纲缩放，消除某列标准差过小导致大密实目标被切碎的副作用，并使 eps 具有米制含义。
+- `Dbscan.FindKneeEps` 增加 `epsMax` 上限截断。
+- `Dbscan` 新增 `SplitClusterByGap`，用最小生成树间隙比识别并剪开被桥接的稀疏簇；单个大而密实目标的间隙比为 1.3~1.4，被间隙连接的目标为 7.5 以上，不会误拆。
+- `ClusterConst` 新增 `FeatureScale`/`EpsMax`/`ClusterSplitEnabled`/`ClusterGapMin`/`ClusterGapRatio`；配置解析改为 `TryParse`，单项错误不再影响后续读取。
+
+**使用说明：** 均为新增能力，默认保持既有行为（`FeatureScale` 未配置即仍为 Z-score 模式，拆分默认关闭）。启用物理量纲后 `FeatureWeights` 不再生效。
