@@ -76,12 +76,14 @@
     <Compile Include="Core\Rhd\RadarDataParser.cs" />
     <Compile Include="DataUtil\DataService_RadarBlacklist.cs" />
     <Compile Include="Model\BaseMessage.cs" />
+    <Compile Include="Model\ClusterGeneral.cs" />
     <Compile Include="Model\ClusterQuality.cs" />
     <Compile Include="Model\ClusterStatus.cs" />
     <Compile Include="Model\CommUnit.cs" />
     <Compile Include="Model\Mapper\RadarGroup.cs" />
     <Compile Include="Model\ObjectQuality.cs" />
     <Compile Include="Model\ObjectStatus.cs" />
+    <Compile Include="Model\ObjectGeneral.cs" />
     <Compile Include="Model\RadarBase.cs" />
     <Compile Include="Model\RadarBlacklist.cs" />
     <Compile Include="Model\RadarState.cs" />
@@ -97,6 +99,7 @@
     <Compile Include="Model\Rhd\Temp.cs" />
     <Compile Include="Model\ISensorGeometryContext.cs" />
     <Compile Include="Model\SensorGeometryContextDefault.cs" />
+    <Compile Include="Model\SensorGeneral.cs" />
     <Compile Include="Model\SensorMessage.cs" />
     <Compile Include="Model\SensorQuality.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,7 +1,10 @@
-﻿using ArsLibrary.Core;
+using ArsLibrary.Core;
+using ArsLibrary.Model;
 using CommonLib.Extensions;
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +14,7 @@ namespace ArsLibrary.Model
     /// <summary>
     /// 集群基本信息实体类
     /// </summary>
+    [ProtoContract]
     public class ClusterGeneral : SensorGeneral
     {
         private FalseAlarmProbability pdh = new FalseAlarmProbability();
@@ -23,11 +27,11 @@ namespace ArsLibrary.Model
         /// </summary>
         public FalseAlarmProbability Pdh0
         {
-            get { return pdh; }
+            get { return this.pdh; }
             set
             {
-                pdh = value;
-                PdhString = pdh.GetDescription();
+                this.pdh = value;
+                this.PdhString = this.pdh.GetDescription();
             }
         }
 
@@ -41,11 +45,11 @@ namespace ArsLibrary.Model
         /// </summary>
         public AmbigState AmbigState
         {
-            get { return ambig_state; }
+            get { return this.ambig_state; }
             set
             {
-                ambig_state = value;
-                AmbigStateString = ambig_state.GetDescription();
+                this.ambig_state = value;
+                this.AmbigStateString = this.ambig_state.GetDescription();
             }
         }
 
@@ -59,11 +63,11 @@ namespace ArsLibrary.Model
         /// </summary>
         public InvalidState InvalidState
         {
-            get { return invalid_state; }
+            get { return this.invalid_state; }
             set
             {
-                invalid_state = value;
-                InvalidStateString = invalid_state.GetDescription();
+                this.invalid_state = value;
+                this.InvalidStateString = this.invalid_state.GetDescription();
             }
         }
 
@@ -77,19 +81,39 @@ namespace ArsLibrary.Model
         /// 基础信息初始化
         /// </summary>
         /// <param name="message">基础信息</param>
-        /// <param name="radar">雷达信息</param>
-        public ClusterGeneral(BaseMessage message, RadarBase radar) : base(message, radar) { }
+        /// <param name="radar">雷达几何上下文</param>
+        public ClusterGeneral(BaseMessage message, ISensorGeometryContext radar) : base(message, radar) { }
 
         /// <summary>
         /// 基础信息初始化
         /// </summary>
         /// <param name="message">基础信息</param>
-        public ClusterGeneral(BaseMessage message) : this(message, null) { }
+        public ClusterGeneral(BaseMessage message) : base(message, null) { }
 
         /// <summary>
         /// 默认构造器
         /// </summary>
-        public ClusterGeneral() : this(null, null) { }
+        public ClusterGeneral() : base(null, null) { }
+
+        /// <summary>
+        /// 复制出一个同类型的新实例（不复制坐标与距离等派生数据）
+        /// </summary>
+        /// <returns>新实例</returns>
+        public override SensorGeneral Copy()
+        {
+            ClusterGeneral general = new ClusterGeneral
+            {
+                Id = Id,
+                DistLong = DistLong,
+                DistLat = DistLat,
+                VrelLong = VrelLong,
+                VrelLat = VrelLat,
+                DynProp = DynProp,
+                RCS = RCS,
+                PushfCounter = PushfCounter
+            };
+            return general;
+        }
 
         /// <summary>
         /// 转换2进制数据
