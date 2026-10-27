@@ -357,11 +357,11 @@ namespace ArsLibrary.Model
                 int m = Radar.DefenseMode; //防御模式：1 点，2 线，3 面
                 //d = (a*x^2+b*z^2+c*y^2)^0.5，其中a, b, c由4-m, 3-m, 2-m的值决定，假如大于0则为1，小于等于0为0（公式形如Math.Sign(4 - m) == 1 ? 1 : 0）
                 //含义：面模式，a=1,b=c=0；线模式，a=b=1,c=0；点模式，a=b=c=1
-                //假如方向为上下（且为面防御模式），则只计算竖直方向Z坐标的值
-                DistanceToBorder = (dir == Directions.Up || dir == Directions.Down) && m == 3 ? z : Math.Sqrt((Math.Sign(4 - m) == 1 ? 1 : 0) * Math.Pow(x, 2) + (Math.Sign(3 - m) == 1 ? 1 : 0) * Math.Pow(z, 2) + (Math.Sign(2 - m) == 1 ? 1 : 0) * Math.Pow(y, 2));
-                //当方向向下（且为面防御模式）时，在距离前乘以一个值为-1的系数（向下指时Z坐标均为负数）
-                //雷达距离校正Offset已在Radar.CurrentDistance的输出侧处理，故不用再次计算
-                DistanceToBorder = (dir == Directions.Down && m == 3 ? -1 : 1) * DistanceToBorder/* + Radar.Offset*/;
+                //假如方向为上下（且为面防御模式），则只计算竖直方向Z坐标的值（取绝对值），否则按公式计算距离
+                DistanceToBorder = (dir == Directions.Up || dir == Directions.Down) && m == 3 ? Math.Abs(z) : Math.Sqrt((Math.Sign(4 - m) == 1 ? 1 : 0) * Math.Pow(x, 2) + (Math.Sign(3 - m) == 1 ? 1 : 0) * Math.Pow(z, 2) + (Math.Sign(2 - m) == 1 ? 1 : 0) * Math.Pow(y, 2));
+                ////当方向向下（且为面防御模式）时，在距离前乘以一个值为-1的系数（向下指时Z坐标均为负数）
+                ////雷达距离校正Offset已在Radar.CurrentDistance的输出侧处理，故不用再次计算
+                //DistanceToBorder = (dir == Directions.Down && m == 3 ? -1 : 1) * DistanceToBorder/* + Radar.Offset*/;
                 //假如防御模式为面，再添加处理步骤：乘以x的符号，效果为使边界距离带符号；假如面向北或陆，则再乘以-1（所面向方向坐标均为负数）
                 if (m == 3 && dir != Directions.Up && dir != Directions.Down)
                     DistanceToBorder *= Math.Sign(x) * (dir == Directions.Left || dir == Directions.Back ? -1 : 1);
