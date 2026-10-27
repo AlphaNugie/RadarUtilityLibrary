@@ -157,12 +157,82 @@ namespace ArsLibrary.Cluster
         /// <param name="heartZFilterEnabled">是否启用高度中心筛选</param>
         /// <param name="heartZLow">高度中心下限</param>
         /// <param name="heartZHigh">高度中心上限</param>
-        public void Evaluate(double lOffset, int minPoints, bool heartZFilterEnabled, double heartZLow, double heartZHigh)
+        /// <param name="distanceMode">簇距离聚合方式：0=最小值，1=剔除近端离群点后的最小值，2=第k小，3=中位数</param>
+        /// <param name="dropRatio">剔除近端离群点的比例（distanceMode=1时生效）</param>
+        /// <param name="maxDrop">剔除近端离群点的最大个数（distanceMode=1时生效）</param>
+        /// <param name="kth">第k小值方式使用的k（distanceMode=2时生效）</param>
+        public void Evaluate(double lOffset, int minPoints, bool heartZFilterEnabled, double heartZLow, double heartZHigh,
+            int distanceMode = 0, double dropRatio = 0.15, int maxDrop = 2, int kth = 2)
         {
-            L = Points.Count > 0 ? Points.Min(p => p.DistanceToBorder) - lOffset : 0;
+            L = ComputeClusterDistance(distanceMode, dropRatio, maxDrop, kth) - lOffset;
             bool enoughPoints = PointCount >= minPoints;
             bool heightOk = !heartZFilterEnabled || (HeartZ >= heartZLow && HeartZ <= heartZHigh);
             IsValid = enoughPoints && heightOk;
+        }
+
+        /// <summary>
+        /// 按指定的聚合方式计算簇的报警距离（未减距离偏置）
+        /// </summary>
+        /// <remarks>
+        /// 簇内各点的DistanceToBorder是"该防御方向上点到检测区边界的距离"，
+        /// 因此取最小值得到的是物体最靠近检测边界的那一面，即物体表面距离（防碰要的正是这个量）。
+        /// 各种方式的取舍：
+        ///   0 最小值：语义最正确，但会被单个突出近点（毛刺、倒角、误检点）拉近，造成误报；
+        ///   1 剔除近端离群点后的最小值：保留表面语义，同时对个别突出点免疫，推荐使用；
+        ///   2 第k小值：与方式1接近，但k固定、不随点数自适应；
+        ///   3 中位数：得到的是簇的中心位置而非物体表面，斜置目标下会明显偏远，破坏防碰语义，仅供对比试验。
+        /// </remarks>
+        /// <param name="distanceMode">聚合方式</param>
+        /// <param name="dropRatio">剔除比例（方式1）</param>
+        /// <param name="maxDrop">剔除最大个数（方式1）</param>
+        /// <param name="kth">第k小值的k（方式2）</param>
+        /// <returns>簇的报警距离，无点时返回0</returns>
+        public double ComputeClusterDistance(int distanceMode, double dropRatio, int maxDrop, int kth)
+        {
+            if (Points == null || Points.Count == 0)
+                return 0;
+
+            switch (distanceMode)
+            {
+                case 1: //剔除近端离群点后的最小值
+                    {
+                        //剔除个数按点数比例计算并封顶
+                        int drop = (int)Math.Round(Points.Count * dropRatio);
+                        if (drop > maxDrop)
+                            drop = maxDrop;
+                        if (drop < 0)
+                            drop = 0;
+                        //剔除数不得超过"点数减2"，即至少保留2个点参与取最小值：
+                        //  保留≥2个点 ⇒ 结果仍是多个点中最小的那个，不会因剔除而翻到"更远的一面"，
+                        //  保住物体表面语义；同时2~3个点的小簇不剔除（点数太少无法判断谁是离群点）
+                        int maxAllowed = Points.Count - 2;
+                        if (maxAllowed < 0)
+                            maxAllowed = 0;
+                        if (drop > maxAllowed)
+                            drop = maxAllowed;
+                        if (drop <= 0)
+                            return Points.Min(p => p.DistanceToBorder);
+                        //只剔近端（最小值端），远端点对最小值本就无害
+                        var ordered = Points.Select(p => p.DistanceToBorder).OrderBy(v => v).ToList();
+                        return ordered[drop];
+                    }
+                case 2: //第k小值
+                    {
+                        int k = kth < 1 ? 1 : kth;
+                        if (k > Points.Count)
+                            k = Points.Count;
+                        var ordered = Points.Select(p => p.DistanceToBorder).OrderBy(v => v).ToList();
+                        return ordered[k - 1];
+                    }
+                case 3: //中位数（仅供对比试验）
+                    {
+                        var ordered = Points.Select(p => p.DistanceToBorder).OrderBy(v => v).ToList();
+                        int n = ordered.Count;
+                        return n % 2 == 1 ? ordered[n / 2] : (ordered[n / 2 - 1] + ordered[n / 2]) / 2;
+                    }
+                default: //0 最小值（现状）
+                    return Points.Min(p => p.DistanceToBorder);
+            }
         }
 
         /// <summary>

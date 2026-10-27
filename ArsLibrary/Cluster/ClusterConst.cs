@@ -200,6 +200,33 @@ namespace ArsLibrary.Cluster
         /// </summary>
         public static double BodyBoxXMinLimit { get; set; } = 20;
 
+        /// <summary>
+        /// 簇距离聚合方式：
+        /// 0=最小值（现状，取簇内最靠近检测边界的那一面，即物体表面距离）；
+        /// 1=剔除近端离群点后的最小值（推荐，保留表面语义但不受单个突出近点影响）；
+        /// 2=第k小值（k取DistanceKth）；3=中位数（仅供对比试验，会取到簇中心位置，破坏表面语义，不建议上线）
+        /// </summary>
+        public static int DistanceMode { get; set; } = 0;
+
+        /// <summary>
+        /// 剔除近端离群点的比例（DistanceMode=1时生效）：剔除个数=round(点数×本值)，再由DistanceMaxDrop封顶
+        /// 调大=更激进地剔除近端点（对毛刺更宽容，但斜置目标的距离会偏远），调小=更接近原始min
+        /// </summary>
+        public static double DistanceDropRatio { get; set; } = 0.15;
+
+        /// <summary>
+        /// 剔除近端离群点的最大个数（DistanceMode=1时生效）
+        /// 实际剔除数还会被"簇内点数减2"进一步限制，即至少保留2个点参与取最小值：
+        /// 保证结果仍是多个点中最小的那个，不会因剔除而翻到"更远的一面"、破坏物体表面语义；
+        /// 同时2~3个点的小簇不剔除（点数太少无法判断谁是离群点）
+        /// </summary>
+        public static int DistanceMaxDrop { get; set; } = 2;
+
+        /// <summary>
+        /// 第k小值方式使用的k（DistanceMode=2时生效，从1计）
+        /// </summary>
+        public static int DistanceKth { get; set; } = 2;
+
         #endregion
 
         #region 结果显示（画面上的聚类包围框）
@@ -370,6 +397,15 @@ namespace ArsLibrary.Cluster
                     BodyBoxMeanYLimit = valued;
                 if (iniHelper.TryReadValue(SectionName, "BodyBoxXMinLimit", 20.0, out valued))
                     BodyBoxXMinLimit = valued;
+                //簇距离聚合方式
+                if (iniHelper.TryReadValue(SectionName, "ClusterDistanceMode", 0, out valuei))
+                    DistanceMode = valuei;
+                if (iniHelper.TryReadValue(SectionName, "ClusterDistanceDropRatio", 0.15, out valued))
+                    DistanceDropRatio = valued;
+                if (iniHelper.TryReadValue(SectionName, "ClusterDistanceMaxDrop", 2, out valuei))
+                    DistanceMaxDrop = valuei;
+                if (iniHelper.TryReadValue(SectionName, "ClusterDistanceKth", 2, out valuei))
+                    DistanceKth = valuei;
                 #endregion
 
                 #region 结果显示
