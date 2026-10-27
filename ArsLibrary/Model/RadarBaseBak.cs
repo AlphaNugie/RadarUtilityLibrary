@@ -16,6 +16,17 @@ namespace ArsLibrary.Model
     /// <summary>
     /// 雷达基础实体类
     /// </summary>
+    /// <remarks>
+    /// 【已废弃 · 未参与编译】本文件不在 ArsLibrary.csproj 的 Compile 项中，不会被编入 ArsLibrary.dll。
+    ///
+    /// 废弃原因：
+    /// 1) 引用了同目录下的 DataFrameBase（同样未编译），一旦编入即报 CS0246，无法编译通过；
+    /// 2) 其中的 CoordinateRatios 类与 CommonLib.Function.Fitting.CoordinateRatios 同名不同物，
+    ///    若编入会与库内实际使用的类型冲突；
+    /// 3) 库内真正生效的雷达基类是同目录的 RadarBase.cs（仅含抽象比较器），本文件与之重名易混淆。
+    ///
+    /// 保留本文件仅为历史对照。若将来要把雷达实体下沉到公共库，请先解决上述依赖与命名冲突。
+    /// </remarks>
     [ProtoContract]
     [JsonObject(MemberSerialization.OptIn)]
     public abstract class RadarBase: IComparable<RadarBase>

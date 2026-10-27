@@ -13,6 +13,18 @@ namespace ArsLibrary.Model
     /// <summary>
     /// 帧消息处理基础类
     /// </summary>
+    /// <remarks>
+    /// 【已废弃 · 未参与编译】本文件不在 ArsLibrary.csproj 的 Compile 项中，不会被编入 ArsLibrary.dll。
+    ///
+    /// 废弃原因：
+    /// 1) 引用的 Radar 类型在库内已不存在（库内只有 RadarBase 抽象比较器），一旦编入即报 CS0246，无法编译通过；
+    /// 2) 其中的 IterateDistance 是**旧版迭代平滑**，对"目标持续单向接近"存在计数被反复清零、
+    ///    距离被永久冻结在旧值的缺陷（真实快速逼近的目标反而报不出来）。
+    ///    修复后的实现位于现场业务项目 ARS408 的 DataFrameMessagesBase.IterateDistance
+    ///    （确认条件改为"变化方向连续一致"），请勿参照本文件旧版逻辑。
+    ///
+    /// 保留本文件仅为历史对照，相关代码请以业务项目为准。
+    /// </remarks>
     public abstract class DataFrameBase
     {
         #region 私有成员

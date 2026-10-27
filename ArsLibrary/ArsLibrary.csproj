@@ -95,6 +95,8 @@
     <Compile Include="Model\Rhd\RadarPacket.cs" />
     <Compile Include="Model\Rhd\RadarPacketHeader.cs" />
     <Compile Include="Model\Rhd\Temp.cs" />
+    <Compile Include="Model\ISensorGeometryContext.cs" />
+    <Compile Include="Model\SensorGeometryContextDefault.cs" />
     <Compile Include="Model\SensorMessage.cs" />
     <Compile Include="Model\SensorQuality.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
