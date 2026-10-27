@@ -407,3 +407,128 @@ xcopy /e /r /y /exclude:D:/DLL/_uncopy.txt $(ProjectDir)bin\Debug D:/DLL/
 - `ClusterConst` 新增 `FeatureScale`/`EpsMax`/`ClusterSplitEnabled`/`ClusterGapMin`/`ClusterGapRatio`；配置解析改为 `TryParse`，单项错误不再影响后续读取。
 
 **使用说明：** 均为新增能力，默认保持既有行为（`FeatureScale` 未配置即仍为 Z-score 模式，拆分默认关闭）。启用物理量纲后 `FeatureWeights` 不再生效。
+
+---
+
+## 簇距离聚合方式（新增能力）
+
+> 位置：`ArsLibrary/Cluster/`。为 `RadarCluster` 增加可配置的簇距离聚合方式，解决"物体表面距离被单个突出近点拉近"的问题。
+
+### 一、背景
+
+`RadarPoint.DistanceToBorder` 是**该防御方向上点到检测区边界的距离**（按防御模式取不同坐标轴：点模式取三维径向、线模式忽略横向、面模式只取纵向）。因此簇内取**最小值**得到的是**物体最靠近检测边界的那一面**，即防碰需要的"物体表面距离"。
+
+- **必须用最小值**：中位数/均值代表的是簇的**中心位置**。实测斜置车辆（点云从 x=9 铺到 x=13）时中位数给出 11.0m，比真实表面远 2.0m；报警阈值仅 2.0/1.6/1.0m，该偏差足以造成等级误判。
+- **最小值的弱点**：对单个突出近点（毛刺、倒角、误检点）极度敏感。表面在 12.0m 而有一个 8.5m 的突出点时，最小值偏近 3.5m，直接造成误报。
+
+### 二、四种聚合方式
+
+| 方式 | 配置值 | 取值 | 对表面距离的表达 | 适用性 |
+|------|--------|------|------------------|--------|
+| 最小值 | `DistanceMode=0` | 簇内最小值 | 语义完全正确 | 现状；对单个突出近点敏感 |
+| **剔除近端离群后取最小值** | **`DistanceMode=1`（推荐）** | 剔掉若干最小值后的最小值 | 保留表面语义 | **推荐** |
+| 第k小值 | `DistanceMode=2` | 排序后第k个 | 语义正确 | 与方式1接近，但k固定 |
+| 中位数 | `DistanceMode=3` | 排序后中间值 | 取到簇中心位置 | 仅供对比试验，不建议上线 |
+
+方式1的剔除规则：
+
+```
+drop = round(点数 × DistanceDropRatio)
+drop = min(drop, DistanceMaxDrop)   // 封顶
+drop = min(drop, 点数 - 2)            // 至少保留2个点参与取最小值
+L = 排序后第 drop+1 个值
+```
+
+- **只剔近端**：远端点对最小值本就无害，剔它会让距离偏远。
+- **至少保留2个点**：否则2点簇剔1个会从"最近的那一面"翻到"更远的一面"，表面语义反转。2~3点的小簇不剔除。
+
+### 三、新增 API
+
+| 成员 | 签名 | 说明 |
+|------|------|------|
+| `RadarCluster.ComputeClusterDistance` | `double (int distanceMode, double dropRatio, int maxDrop, int kth)` | 按指定方式计算簇的报警距离（未减距离偏置）；无点时返回0 |
+| `RadarCluster.Evaluate` | 新增 4 个可选参数 `distanceMode`/`dropRatio`/`maxDrop`/`kth` | 均有默认值，不传时行为与旧版完全一致（源码与二进制向后兼容） |
+
+### 四、新增配置项（`[Cluster]` 段）
+
+| ini 键 | 属性名 | 默认值 | 说明 |
+|--------|--------|--------|------|
+| `ClusterDistanceMode` | `DistanceMode` | 0 | 聚合方式：0最小值 / 1剔除近端离群后最小值 / 2第k小 / 3中位数 |
+| `ClusterDistanceDropRatio` | `DistanceDropRatio` | 0.15 | 剔除比例（方式1生效） |
+| `ClusterDistanceMaxDrop` | `DistanceMaxDrop` | 2 | 剔除最大个数（方式1生效） |
+| `ClusterDistanceKth` | `DistanceKth` | 2 | 第k小值的k（方式2生效） |
+
+### 五、变更记录（本次）
+
+### 2026-10-27 — 新增簇距离聚合方式
+
+**修改文件：** `ArsLibrary/Cluster/RadarCluster.cs`、`ArsLibrary/Cluster/ClusterConst.cs`
+
+**问题：** 簇报警距离取簇内最小值，对单个突出近点（毛刺、倒角、误检点）极度敏感，会把距离拉近数米造成误报；而改用中位数/均值又会取到簇中心位置、破坏"物体表面距离"语义。
+
+**修正内容：**
+- `RadarCluster` 新增 `ComputeClusterDistance`，支持最小值 / 剔除近端离群后最小值 / 第k小值 / 中位数四种方式。
+- `Evaluate` 增加 4 个可选参数，均有默认值，未传参时行为与旧版完全一致。
+- `ClusterConst` 新增 `DistanceMode`/`DistanceDropRatio`/`DistanceMaxDrop`/`DistanceKth` 并接入 `Refresh` 读取。
+- 剔除规则保证至少保留 2 个点参与取最小值，避免表面语义反转。
+
+**使用说明：** 默认 `ClusterDistanceMode=0`（与原有行为完全一致），需现场确认后再切到 `1`。该能力只解决"簇内近端离群点"造成的距离突变，解决不了"远处点被并入同一簇"（后者需靠 `EpsMax` 与 `ClusterSplitEnabled`）。
+
+---
+
+## 传感器几何上下文接口（ISensorGeometryContext）
+
+> 位置：`ArsLibrary/Model/ISensorGeometryContext.cs`、`ArsLibrary/Model/SensorGeometryContextDefault.cs`。
+> 目的：让点消息模型（SensorGeneral 及其子类）不再直接依赖具体雷达实体类，从而该模型可以下沉到公共库、被多个现场项目共用一份实现。
+
+### 一、接口构成
+
+| 接口 | 成员数 | 说明 |
+|------|--------|------|
+| `ISensorGeometryContext` | 22 | 点消息换算单机坐标与边界距离所需的全部雷达参数：Id、Direction、DefenseMode、X/Y/ZOffset、X/Y/ZmodifiedRatios、RadarxMin/Max、RadaryMin/Max、Claimerx/y/zMin/Max、AngleMin/Max |
+| `ISensorLimitContext` | 3 | 三个范围限制开关：WithinRadarLimit、WithinClaimerLimit、WithinAngleLimit |
+
+两个接口分开的理由：**并非所有现场的雷达实体都具备那三个开关**（部分现场在早期版本中将其注释掉、未启用）。点消息侧用 `as ISensorLimitContext` 探测实现，未实现时按"开关全部生效"处理（不反转判定结果），与"开关为真"的语义一致。
+
+### 二、实现方须知
+
+- 接口成员**只有 getter**。C# 允许把 `{ get; private set; }` 或 `{ get; set; }` 的属性实现为只读接口成员，**实现类无需修改属性的可写性**，接入成本极低。
+- 属性名与语义在所有实现中保持一致，避免"同名不同义"。
+- 取值须与雷达实体保持同步（雷达参数在运行期可能被重新标定）。
+
+### 三、默认上下文
+
+`SensorGeometryContextDefault` 是"未指定雷达"时的兜底实现：Id = -1、偏移量与范围上下限全为 0、Direction = None、DefenseMode = 0。点消息模型据此跳过坐标换算与范围判定，与历史"新建一个默认雷达实体"的行为一致。
+
+### 四、已接入的项目
+
+| 项目 | 改动 |
+|------|------|
+| 煤二期 `ARS408_RadarImage_Mei2` | `Radar` 实现 `ISensorGeometryContext` + `ISensorLimitContext`；`SensorGeneral` 的 `Radar` 属性类型由具体 `Radar` 改为 `ISensorGeometryContext`；`ClusterGeneral` / `ObjectGeneral` 构造器的雷达参数类型同步改为接口 |
+| 湛江 `ARS408_RadarImage_Standby` | `Radar` 实现 `ISensorGeometryContext`（不含限制开关，该现场无这三个成员）；其余同上 |
+
+改造后，点消息模型的坐标换算与范围判定结果与改造前**逐位一致**（已用 289 项用例对照验证：7 种朝向 × 3 种防御模式 × 5 组坐标，含限制开关的开/关组合，以及未指定雷达时的兜底语义）。
+
+### 五、后续可做的下沉工作
+
+点消息模型（`SensorGeneral` / `ClusterGeneral` / `ObjectGeneral`）目前仍在各现场项目内，进一步下沉到本库还需处理：
+
+1. **两个项目的 `DistanceToBorder` 语义分叉**：煤二期在面模式下带符号处理（`DistanceToBorder *= Math.Sign(x) * ...`），湛江该段被注释掉且上下方向一律取 `Math.Abs(z)`。下沉时必须先确定统一语义，否则会改变其中一个现场的报警行为。
+2. **序列化机制不同**：煤二期用 ProtoBuf 特性，湛江用 SerializationFactory，同一份模型无法同时用两套机制。
+3. **子类在业务侧**：`[ProtoInclude]` 直接引用具体子类，需一并处理。
+
+### 六、变更记录（本次）
+
+### 2026-10-27 — 新增传感器几何上下文接口并接入两个现场项目
+
+**新增文件：** `ArsLibrary/Model/ISensorGeometryContext.cs`、`ArsLibrary/Model/SensorGeometryContextDefault.cs`；`ArsLibrary/ArsLibrary.csproj` 新增 2 条 `Compile`
+
+**问题：** 点消息模型（SensorGeneral）直接依赖具体雷达实体类（煤二期 1218 行、湛江 1410 行），模型层无法下沉到公共库，两个现场各自维护一份已分叉的同名类。
+
+**修正内容：**
+- 新增 `ISensorGeometryContext`（22 个几何与标定参数）与 `ISensorLimitContext`（3 个范围限制开关）两个接口。
+- 新增 `SensorGeometryContextDefault` 作为未指定雷达时的兜底实现。
+- 煤二期与湛江两个项目的 `Radar` 分别实现对应接口；`SensorGeneral` 的 `Radar` 属性、两个子类的构造器参数由具体类型改为接口类型。
+- `CheckIfWithinLimits` 的开关读取改为 `as ISensorLimitContext` 探测，未实现时按"开关全部生效"处理。
+
+**使用说明：** 接口成员只含 getter，实现类的属性可写性无需调整。行为等价性已验证（289 项用例全部一致）。**本次仅新增 public 类型，未改动任何既有成员，其它引用 ArsLibrary.dll 的项目无需重新编译。**
