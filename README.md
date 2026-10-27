@@ -532,3 +532,79 @@ L = 排序后第 drop+1 个值
 - `CheckIfWithinLimits` 的开关读取改为 `as ISensorLimitContext` 探测，未实现时按"开关全部生效"处理。
 
 **使用说明：** 接口成员只含 getter，实现类的属性可写性无需调整。行为等价性已验证（289 项用例全部一致）。**本次仅新增 public 类型，未改动任何既有成员，其它引用 ArsLibrary.dll 的项目无需重新编译。**
+
+---
+
+## 点消息模型下沉（SensorGeneral / ClusterGeneral / ObjectGeneral）
+
+> 位置：`ArsLibrary/Model/SensorGeneral.cs`、`ArsLibrary/Model/ClusterGeneral.cs`、`ArsLibrary/Model/ObjectGeneral.cs`。
+> 这三个原先位于各现场项目内的点消息模型，现已下沉到公共库，由煤二期与湛江两个现场共用同一份实现。
+
+### 一、下沉内容
+
+| 类型 | 说明 |
+|------|------|
+| `SensorGeneral` | 点消息基类，抽象。含坐标换算、边界距离计算、范围判定、动态属性、颜色与 RCS 换算 |
+| `ClusterGeneral` | 集群点消息，继承 `SensorGeneral` |
+| `ObjectGeneral` | 目标点消息，继承 `SensorGeneral` |
+| `ModifiedCoordinates` | 转换后的原始坐标载体（原在业务侧，同文件内定义） |
+
+依赖全部落在库内：`SensorMessage` / `BaseMessage`（`ArsLibrary.Model`）、`DynProp` / `FalseAlarmProbability` / `AmbigState` / `InvalidState` / `ProbOfExist`（`ArsLibrary.Core`）、`ArsFunc`（`ArsLibrary.Core`）、`Point3D`（`CommonLib.Function.MathUtils`）、`CoordinateRatios`（`CommonLib.Function.Fitting`）、`ProtoBuf`（protobuf-net 2.4.6）。
+
+### 二、序列化统一为 ProtoBuf
+
+三个模型统一采用 `protobuf-net` 的 `[ProtoContract]` / `[ProtoInclude]` / `[ProtoMember]` 标注。
+
+- 煤二期：原本就使用 ProtoBuf 标注，**下沉后完全等价**。
+- 湛江：原先三个模型**没有任何序列化标注**（`using SerializationFactory;` 是冗余 using），下沉后自动获得 ProtoBuf 契约能力，**不影响原有行为**。
+- 三个项目引用的 `protobuf-net` 均为 **2.4.6**（同一 HintPath），标注类型完全一致。
+
+### 三、DistanceToBorder 语义（统一为煤二期语义）
+
+按防御模式与雷达朝向计算"点到检测边界的距离"：
+
+| 防御模式 | 计算式 |
+|---|---|
+| m=1 点 | `sqrt(x² + z² + y²)` 三维径向 |
+| m=2 线 | `sqrt(x² + z²)` 忽略横向 |
+| m=3 面 | `|x|`，且**带符号** |
+
+面模式下的符号处理：`DistanceToBorder *= Math.Sign(x) * (dir == Left || dir == Back ? -1 : 1)`，可区分目标位于检测面的哪一侧；上下方向（Up/Down）且面模式时取竖直坐标 z，向下时整体取反。
+
+> **湛江统一后的行为变化**：湛江原实现为"上下方向一律取 `Math.Abs(z)`、面模式符号处理整段注释掉"，即距离恒为正。统一为煤二期语义后，**部分方向上的目标距离会变为负值**。
+>
+> 实测对照（30 组：6 朝向 × 5 组坐标，面模式）：24 组完全一致，6 组仅符号相反，**无数值量级变化**。
+>
+> 受影响的方向（现场 24 台雷达全部为面模式，方向分布 Front×4 / Left×5 / Back×4 / Right×5 / Down×6）：
+> - `Left` 方向：单机 X 为正的一侧 → 距离变负
+> - `Right` 方向：单机 X 为负的一侧 → 距离变负
+> - `Front` / `Back` 方向：横向坐标为负的一侧 → 距离变负
+>
+> **注意**：负距离在 `GetThreatLevelByValue` 的分段阈值映射中（判断条件为 `value <= -100` 才视为无效），会被判为**最高报警等级**。煤二期现场当前运行的正是这一语义，两现场雷达配置（24 台雷达的方向与防御模式）逐一对应，故统一后行为与煤二期一致。
+
+### 四、现场接入方式
+
+各现场只需：
+
+1. 引用 `ArsLibrary.dll`；
+2. 业务代码加 `using ArsLibrary.Model;`；
+3. 删除本地的 `Model/SensorGeneral.cs`、`Model/ClusterGeneral.cs`、`Model/ObjectGeneral.cs` 及 csproj 中对应的 `Compile` 项；
+4. 雷达实体实现 `ISensorGeometryContext`（及可选的 `ISensorLimitContext`）。
+
+### 五、变更记录（本次）
+
+### 2026-10-27 — 点消息模型下沉到公共库
+
+**新增文件：** `ArsLibrary/Model/SensorGeneral.cs`、`ArsLibrary/Model/ClusterGeneral.cs`、`ArsLibrary/Model/ObjectGeneral.cs`；`ArsLibrary/ArsLibrary.csproj` 新增 3 条 `Compile`
+
+**修改文件：** `ArsLibrary/ArsLibrary.csproj`（新增 3 条 Compile）、`ArsLibrary/Model/ISensorGeometryContext.cs`（配套）、`ArsLibrary/Model/SensorGeometryContextDefault.cs`（配套）
+
+**问题：** 点消息模型原先位于各现场项目内，煤二期与湛江各维护一份已分叉的同名类（`DistanceToBorder` 语义、序列化机制、字段均有差异），维护成本高且易产生行为分叉。
+
+**修正内容：**
+- 三个模型下沉到 `ArsLibrary.Model`，统一为煤二期语义。
+- 序列化统一为 ProtoBuf（湛江原无标注，不影响行为）。
+- 补入湛江独有的 `ArelLongRmsNum` / `ArelLatRmsNum` / `OrientationRmsNum` 三个字段，保证湛江业务侧 `Radar.cs` 的读取不报错。
+- 配套的 `ISensorGeometryContext` / `ISensorLimitContext` / `SensorGeometryContextDefault` 为前置改造（上一轮已提交）。
+
+**使用说明：** 现场接入只需 `using ArsLibrary.Model;` 并删除本地同名文件。**湛江统一后部分方向的目标距离会变为负值（与煤二期一致），负值在等级映射中判为最高报警级，上线前建议现场确认。**
