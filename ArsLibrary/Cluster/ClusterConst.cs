@@ -25,8 +25,14 @@ namespace ArsLibrary.Cluster
 
         /// <summary>
         /// 是否启用统计离群点去除（SOR）
-        /// 启用后强制关闭雷达原有的排除离散点（RemoveDistantPoints），二者不可叠加
         /// </summary>
+        /// <remarks>
+        /// 程序级总开关。与雷达自身的"排除离散点"开关（remove_distant_points）**同时为真**时，
+        /// 该雷达的"排除离散点"行为才由原有的"平均距离阈值剔除"改为 SOR 统计离群点滤除。
+        ///
+        /// SOR 作用于原始业务点集（DataPushFinalize 阶段），即在聚类之前完成，
+        /// 被滤除的点同时不出现在画面上；聚类管线内部不再重复执行 SOR。
+        /// </remarks>
         public static bool SorEnabled { get; set; } = false;
 
         /// <summary>
