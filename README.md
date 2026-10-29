@@ -608,3 +608,75 @@ L = 排序后第 drop+1 个值
 - 配套的 `ISensorGeometryContext` / `ISensorLimitContext` / `SensorGeometryContextDefault` 为前置改造（上一轮已提交）。
 
 **使用说明：** 现场接入只需 `using ArsLibrary.Model;` 并删除本地同名文件。**湛江统一后部分方向的目标距离会变为负值（与煤二期一致），负值在等级映射中判为最高报警级，上线前建议现场确认。**
+
+---
+
+## SOR 提前到聚类之前（"排除离散点"行为变更）
+
+> 涉及：`ArsLibrary/Cluster/ClusterConst.cs`（注释更新）与现场项目侧（`DataFrameMessagesBase` / `DataFrameMessages` / `DataFrameMessagesRhd`）。
+
+### 一、变更内容
+
+雷达行为页的**「排除离散点」**勾选框（数据库字段 `remove_distant_points`）的行为发生变更：
+
+| | 变更前 | 变更后 |
+|---|---|---|
+| 实际算法 | `BaseFunc.RemoveDistantPoints`：按"点到其它点的平均距离"与阈值比较（阈值由 `DistantPointsRemovalCoeff` 决定） | **SOR 统计离群点滤除**：按"点到其它点的平均 k 近邻距离"与 `均值 + nSigma × 总体标准差` 比较 |
+| 作用点集 | 原始业务点集（`ListBuffer`） | 原始业务点集（`ListBuffer`）——**不变** |
+| 生效条件 | 该雷达勾选即生效 | **程序总体 `SorEnabled` 与该雷达的「排除离散点」开关同时为真** |
+| 与聚类的关系 | 与 SOR 二者不可叠加（SOR 生效时强制关闭本项） | SOR **提前到聚类之前**执行，聚类管线内部不再重复执行 |
+
+### 二、为什么聚类管线内部的 SOR 要注释掉
+
+SOR 提前后已在 `DataPushFinalize` 阶段作用于原始业务点集，若聚类管线内部再执行一次，相当于对同一批点做两次离群点判定：
+
+- 第一次在原始点集上判定，第二次在聚类用的中性点副本上判定；
+- 两次的坐标基准不同（业务点坐标 vs 中性点坐标），判定结果可能不一致；
+- 第二次判定发生在本体（臂架）点剔除之后，点集已经变过，判断基准又变了。
+
+因此聚类管线内部（`DataFrameMessagesBase.RunClusterPipeline`）的 SOR 调用已注释保留，不再执行。
+
+### 三、通用实现方式
+
+库内的 `PointCloudFilters.StatisticalOutlierRemoval` 接口保持不变（输入 `List<RadarPoint>`）。现场项目侧新增了基类通用方法：
+
+```csharp
+protected int ApplyStatisticalOutlierRemoval(List<TGeneral> points, List<TGeneral> discarded)
+```
+
+实现要点：
+
+1. 业务点逐个转换为中性点 `RadarPoint`，并用 `SourceIndex` 记录原始下标；
+2. 交给 `PointCloudFilters.StatisticalOutlierRemoval` 处理；
+3. 按保留/剔除结果回填两个集合（保留点留在原集合，被滤除的点移入"其它点"集合）。
+
+两个数据格式各自的坐标映射（由各子类的 `ConvertToRadarPoint` 提供）：
+
+| 格式 | X | Y | Z |
+|---|---|---|---|
+| ARS408（`SensorGeneral`） | `DistLong` | `DistLat` | 0 |
+| RHD（`Data`） | `X` | `Y` | `Z` |
+
+两套坐标**不同源、不可混用**。
+
+### 四、SOR 的固有特性（现场调参需知）
+
+1. **点数不足 `SorK+1` 时整段跳过**，一个点都不滤。点少时若发现离群点没被滤掉，先把 `SorK` 调小。
+2. **线性均匀点阵的两端点必然被判为离群**：端点的 k 近邻距离天然大于内部点。实测 20 点等距点阵（间距 0.05m、k=4、nSigma=2.0）首尾两点被剔除；而 24 点圆环（完全对称）一个都不剔。这是算法固有特性，不是缺陷。
+   - 规避方式：调大 `SorK`（近邻数变多，端点效应减弱）或调大 `SorNSigma`（阈值更宽松）。
+3. **总体标准差（除以 N）**，与 sklearn 的 `StandardScaler`（`ddof=0`）一致。
+
+### 五、变更记录（本次）
+
+### 2026-10-29 — SOR 提前到聚类之前
+
+**修改文件：** `ArsLibrary/Cluster/ClusterConst.cs`（`SorEnabled` 的 XML 注释）
+
+**问题：** SOR 原本只在聚类管线内部生效（作用在聚类用的中性点副本上），而雷达行为页的「排除离散点」是另一套独立的按平均距离阈值的剔除逻辑，两套判据并存、作用点集与时序都不同，且 SOR 生效时会强制关闭「排除离散点」，用户无法同时使用。
+
+**修正内容：**
+- `ClusterConst.SorEnabled` 的语义调整为程序级总开关，与雷达自身的「排除离散点」开关共同决定 SOR 是否生效（文档注释同步更新）。
+- 现场项目侧：`SorActive` 判定改为 `ClusterConst.SorEnabled && Radar.RemoveDistantPoints`；两个子类的 `DataPushFinalize` 中改为调用新增的 `ApplyStatisticalOutlierRemoval`，原 `BaseFunc.RemoveDistantPoints` 调用注释保留。
+- 聚类管线内部（`RunClusterPipeline`）的 SOR 调用注释保留，不再执行，避免对同一批点做两次离群点判定。
+
+**使用说明：** 生效条件为程序总体 `SorEnabled` 与该雷达的「排除离散点」开关同时为真；SOR 作用于原始业务点集，被滤除的点同时不出现在画面上。**注意「排除离散点」勾选但 `SorEnabled=0` 时，该雷达不再做任何离群点过滤**（原剔除方法已注释停用）。
